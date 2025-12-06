@@ -1,22 +1,40 @@
-import React from 'react'
-import { getLearnedWords } from '../utils/storage'
-import wordsData from '../data/words.json'
-
+import React, { useEffect, useState } from "react"
+import { supabase } from "../utils/supabase"
+import { getLearnedWords } from "../utils/storage"
 
 export default function Progress() {
-const learned = getLearnedWords()
-const learnedWords = wordsData.filter(w => learned.includes(w.id))
+  const [words, setWords] = useState([])
 
+  useEffect(() => {
+    loadProgress()
+  }, [])
 
-return (
-<div style={{ padding: 20 }}>
-<h2>Progress</h2>
-<div>Words learned: {learned.length}</div>
-<ul>
-{learnedWords.map(w => (
-<li key={w.id}>{w.da} — {w.en}</li>
-))}
-</ul>
-</div>
-)
+  async function loadProgress() {
+    const learnedIds = await getLearnedWords()
+
+    if (learnedIds.length === 0) {
+      setWords([])
+      return
+    }
+
+    const { data } = await supabase
+      .from("words")
+      .select("*")
+      .in("id", learnedIds)
+
+    setWords(data)
+  }
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Progress</h2>
+      <div>Words learned: {words.length}</div>
+
+      <ul>
+        {words.map(w => (
+          <li key={w.id}>{w.da} — {w.en}</li>
+        ))}
+      </ul>
+    </div>
+  )
 }
