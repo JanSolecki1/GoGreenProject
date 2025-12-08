@@ -1,79 +1,81 @@
+// src/pages/GameFlow.jsx
 import React, { useEffect, useState } from "react";
-import MatchingGame from "../components/MatchingGame";
-import MissingLettersGame from "../components/MissingLettersGame";
 import MultipleChoiceGame from "../components/MultipleChoiceGame";
+import MatchingGame from "../components/MatchingGame";
+import MissingLetterGame from "../components/MissingLetterGame";
+import SuccessAnimation from "../components/SuccessAnimation";
 import { supabase } from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
 
 export default function GameFlow() {
   const [toVerify, setToVerify] = useState([]);
-  const [failed, setFailed] = useState([]); // word ids that failed any game
   const [stage, setStage] = useState(1); // 1..3
-  const [results, setResults] = useState({}); // { wordId: {match:bool, missing:bool, mc:bool} }
-  const [showSummary, setShowSummary] = useState(false);
+  const [stageCompleted, setStageCompleted] = useState(false);
+  const [showSuccessAnim, setShowSuccessAnim] = useState(false);
+  const [allSaved, setAllSaved] = useState(false);
   const nav = useNavigate();
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("toVerifyWords");
-    const arr = raw ? JSON.parse(raw) : [];
-    setToVerify(arr);
+    loadToVerify();
   }, []);
 
-  function registerResult(wordId, gameKey, ok) {
-    setResults(prev => {
-      const cur = prev[wordId] || {};
-      return { ...prev, [wordId]: { ...cur, [gameKey]: ok } };
-    });
-  }
-
-  function nextStage() {
-    if (stage < 3) {
-      setStage(s => s + 1);
-    } else {
-      // finish all games -> evaluate
-      evaluateResults();
-    }
-  }
-
-  function evaluateResults() {
-    const failedIds = [];
-    toVerify.forEach(w => {
-      const res = results[w.id] || {};
-      // word must pass all three: match, missing, mc
-      if (!(res.match && res.missing && res.mc)) {
-        failedIds.push(w.id);
-      }
-    });
-    setFailed(failedIds);
-    setShowSummary(true);
-    if (failedIds.length === 0) {
-      saveProgress(toVerify.map(w => w.id));
-    }
-  }
-
-  async function saveProgress(wordIds) {
-    // insert progress records with user context
+  async function loadToVerify() {
     const { data: sessionData } = await supabase.auth.getUser();
     const user = sessionData?.user;
     if (!user) {
-      console.warn("No user session when saving progress");
+      console.warn("No user for GameFlow");
       return;
     }
-    const inserts = wordIds.map(id => ({ user_id: user.id, word_id: id }));
-    const { error } = await supabase.from("progress").insert(inserts);
-    if (error) console.error(error);
-    else {
-      // update streak
-      await updateStreak(user.id);
+
+    // fetch user's to_verify with joined words
+    const { data, error } = await supabase
+      .from("user_to_verify")
+      .select("id, word_id, words(*)")
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error loading to_verify:", error);
+      setToVerify([]);
+      return;
     }
+
+    // data: array of { id, word_id, words: { id, da, en } }
+    const words = (data || []).map(r => r.words).filter(Boolean);
+    setToVerify(words);
+  }
+
+  function handleStageComplete() {
+    setStageCompleted(true);
+  }
+
+  async function finishAndSave() {
+    // save known words (user_known_words), delete user_to_verify, update streak, show animation
+    const { data: sessionData } = await supabase.auth.getUser();
+    const user = sessionData?.user;
+    if (!user) {
+      console.warn("No user for saving");
+      setAllSaved(true);
+      return;
+    }
+    const inserts = (toVerify || []).map(w => ({ user_id: user.id, word_id: w.id }));
+    const { error: insErr } = await supabase.from("user_known_words").insert(inserts);
+    if (insErr) console.error("Insert known words error:", insErr);
+
+    // delete user_to_verify entries for user
+    const { error: delErr } = await supabase.from("user_to_verify").delete().eq("user_id", user.id);
+    if (delErr) console.error("Deleting user_to_verify error:", delErr);
+
+    // update streak
+    await updateStreak(user.id);
+
+    // show success animation then go to summary
+    setShowSuccessAnim(true);
   }
 
   async function updateStreak(userId) {
-    // minimal streak logic: if last_played_date != today -> increment, else do nothing
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const today = new Date().toISOString().slice(0, 10);
     const { data } = await supabase.from("user_streak").select("*").eq("user_id", userId).single();
     if (!data) {
-      // create
       await supabase.from("user_streak").insert({ user_id: userId, streak_days: 1, last_played_date: today });
     } else {
       if (data.last_played_date !== today) {
@@ -85,63 +87,59 @@ export default function GameFlow() {
     }
   }
 
-  function handlePlayAgain() {
-    // if success -> offer play again with known words; we'll just navigate to Progress or reload
-    nav("/progress");
+  // after animation done, mark allSaved and show final screen
+  function onAnimationDone() {
+    setShowSuccessAnim(false);
+    setAllSaved(true);
   }
 
-  if (!toVerify) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (showSuccessAnim) {
+    return <SuccessAnimation wordsCount={toVerify.length} onDone={onAnimationDone} />;
+  }
 
-  if (!showSummary) {
+  if (allSaved) {
     return (
       <div style={{ padding: 20 }}>
-        <h2>Mini games — stage {stage} / 3</h2>
-
-        {stage === 1 && <MatchingGame words={toVerify} registerResult={registerResult} />}
-        {stage === 2 && <MissingLettersGame words={toVerify} registerResult={registerResult} />}
-        {stage === 3 && <MultipleChoiceGame words={toVerify} registerResult={registerResult} />}
-
+        <h2>Success — verified!</h2>
+        <p>{toVerify.length} words added to Known Words.</p>
         <div style={{ marginTop: 12 }}>
-          <button onClick={nextStage}>Next game</button>
+          <button onClick={() => nav("/progress")}>See progress</button>
+          <button style={{ marginLeft: 8 }} onClick={() => nav("/words")}>Practice more</button>
         </div>
       </div>
     );
   }
 
-  // summary
+  if (!toVerify || toVerify.length === 0) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>No words to verify</h2>
+        <p>Go to /words and swipe RIGHT on 10 words to verify them.</p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: 20 }}>
-      <h2>Summary</h2>
-      {failed.length === 0 ? (
-        <>
-          <div>Congratulations — all words verified! ✅</div>
-          <div style={{ marginTop: 12 }}>
-            <button onClick={handlePlayAgain}>See progress / Play again</button>
-          </div>
-        </>
-      ) : (
-        <>
-          <div>Some words need more practice:</div>
-          <ul>
-            {failed.map(id => {
-              const w = toVerify.find(x => x.id === id);
-              return <li key={id}>{w ? `${w.da} — ${w.en}` : id}</li>;
-            })}
-          </ul>
-          <div style={{ marginTop: 12 }}>
-            <button onClick={() => {
-              // Put failed words back into session and restart flow for them
-              const failedWords = toVerify.filter(w => failed.includes(w.id));
-              sessionStorage.setItem("toVerifyWords", JSON.stringify(failedWords));
-              setResults({});
-              setFailed([]);
-              setShowSummary(false);
-              setStage(1);
-            }}>Retry failed words</button>
-            <button style={{ marginLeft: 8 }} onClick={() => nav("/progress")}>Go to progress</button>
-          </div>
-        </>
-      )}
+      <h2>Mini games — stage {stage} / 3</h2>
+
+      {stage === 1 && <MultipleChoiceGame words={toVerify} onComplete={handleStageComplete} />}
+      {stage === 2 && <MatchingGame words={toVerify} onComplete={handleStageComplete} />}
+      {stage === 3 && <MissingLetterGame words={toVerify} onComplete={handleStageComplete} />}
+
+      <div style={{ marginTop: 12 }}>
+        {!stageCompleted ? (
+          <div>Complete the game to unlock Next</div>
+        ) : (
+          <>
+            {stage < 3 ? (
+              <button onClick={() => { setStage(s => s + 1); setStageCompleted(false); }}>Next game</button>
+            ) : (
+              <button onClick={() => finishAndSave()}>Finish & Save</button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
