@@ -1,25 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "../utils/supabase";
-import MultipleChoiceGame from "../components/MultipleChoiceGame";
-import MatchingGame from "../components/MatchingGame";
-import MissingLetterGame from "../components/MissingLetterGame";
 import { useNavigate } from "react-router-dom";
 
-export default function GameFlow() {
-  const [words, setWords] = useState([]);
-  const [stage, setStage] = useState(0); // 0 = MCQ, 1 = Match, 2 = MissingLetter
-  const [loading, setLoading] = useState(true);
+import MultipleChoiceGame from "../components/MultipleChoiceGame";
+import PairingGame from "../components/PairingGame";
+import MissingLetterGame from "../components/MissingLetterGame";
 
+export default function GameFlow() {
+  const [words, setWords] = useState(null); // null = not loaded yet
+  const [stage, setStage] = useState(1);
   const nav = useNavigate();
 
   useEffect(() => {
     loadWordsToVerify();
+    // eslint-disable-next-line
   }, []);
 
   async function loadWordsToVerify() {
-    setLoading(true);
-
     const userId = localStorage.getItem("user_id");
+    if (!userId) {
+      nav("/login");
+      return;
+    }
 
     const { data, error } = await supabase
       .from("user_to_verify")
@@ -27,60 +29,63 @@ export default function GameFlow() {
       .eq("user_id", userId);
 
     if (error) {
-      console.error(error);
-      setLoading(false);
+      console.error("Error loading verify list:", error);
+      nav("/words");
       return;
     }
 
-    const list = data.map(row => row.words);
-
-    setWords(list);
-    setLoading(false);
-  }
-
-  async function finishGame() {
-    const userId = localStorage.getItem("user_id");
-
-    // insert known words
-    for (const w of words) {
-      await supabase
-        .from("user_known_words")
-        .insert({ user_id: userId, word_id: w.id });
+    if (!data || data.length === 0) {
+      // no words to verify -> go back to swipe
+      nav("/words");
+      return;
     }
 
-    // clear user_to_verify
+    // Map depending on structure: if row.words exists, use it; else try to fetch from words table
+    const extracted = data.map(row => row.words || row.word); // defensive
+    setWords(extracted);
+  }
+
+  function nextStage() {
+    setStage(s => s + 1);
+  }
+
+  async function finishAll() {
+    const userId = localStorage.getItem("user_id");
+
+    // add all verified words to known
+    const inserts = (words || []).map(w => ({
+      user_id: userId,
+      word_id: w.id
+    }));
+
+    if (inserts.length > 0) {
+      await supabase.from("user_known_words").insert(inserts);
+    }
+
+    // clear verification table
     await supabase
       .from("user_to_verify")
       .delete()
       .eq("user_id", userId);
 
-    alert("🎉 Great job! You learned new words!");
-
     nav("/progress");
   }
 
-  function nextStage() {
-    if (stage < 2) setStage(stage + 1);
-    else finishGame();
+  // guard: wait until words loaded
+  if (words === null) {
+    return <div style={{ padding: 20 }}>Loading mini-games...</div>;
   }
-
-  if (loading) return <div style={{ padding: 20 }}>Loading games...</div>;
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Mini-games</h2>
+      <h2>Mini games</h2>
+      <p>Step {stage} / 3</p>
 
-      {stage === 0 && (
-        <MultipleChoiceGame words={words} onComplete={nextStage} />
-      )}
+      {stage === 1 && <MultipleChoiceGame words={words} onComplete={nextStage} />}
 
-      {stage === 1 && (
-        <MatchingGame words={words} onComplete={nextStage} />
-      )}
+      {stage === 2 && <PairingGame words={words} onComplete={nextStage} />}
 
-      {stage === 2 && (
-        <MissingLetterGame words={words} onComplete={nextStage} />
-      )}
+      {stage === 3 && <MissingLetterGame words={words} onComplete={finishAll} />}
     </div>
   );
 }

@@ -1,58 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-export default function MultipleChoiceGame({ words, onComplete }) {
+export default function MultipleChoiceGame({ words = [], onComplete }) {
   const [index, setIndex] = useState(0);
-  const [feedback, setFeedback] = useState("");
+  const [options, setOptions] = useState([]);
 
-  const current = words[index];
+  // guard: jeśli nie ma words lub words.length === 0 -> nic nie renderuj
+  useEffect(() => {
+    setIndex(0);
+  }, [words]);
 
-  function randomOptions(correct) {
-    const wrong = words.filter(w => w.id !== correct.id);
-    const choices = [
-      correct.en,
-      wrong[Math.floor(Math.random() * wrong.length)].en,
-      wrong[Math.floor(Math.random() * wrong.length)].en,
-    ];
+  useEffect(() => {
+    if (!words || words.length === 0) return;
+    const current = words[index];
+    if (!current) return;
 
-    return choices.sort(() => Math.random() - 0.5);
+    const wrong = words
+      .filter(w => w.id !== current.id)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 2);
+
+    const opts = [...wrong, current].sort(() => Math.random() - 0.5);
+    setOptions(opts);
+    // eslint-disable-next-line
+  }, [words, index]);
+
+  if (!words || words.length === 0) {
+    return <div>Nothing to practice here.</div>;
   }
 
-  const options = randomOptions(current);
+  const current = words[index];
+  if (!current) return <div>Loading question...</div>;
 
-  function checkAnswer(answer) {
-    if (answer === current.en) {
-      setFeedback("Correct!");
-
-      if (index + 1 < words.length) {
-        setTimeout(() => {
-          setFeedback("");
-          setIndex(i => i + 1);
-        }, 400);
+  function pick(option) {
+    if (option.id === current.id) {
+      // correct
+      if (index + 1 === words.length) {
+        setTimeout(() => onComplete(), 300);
       } else {
-        onComplete();
+        setIndex(i => i + 1);
       }
-
     } else {
-      setFeedback("Try again");
+      // wrong -> we simply show nothing else, user can try again (optionally add feedback)
     }
   }
 
   return (
     <div>
-      <h3>Choose the correct translation</h3>
-      <h2>{current.da}</h2>
+      <h2>Multiple Choice</h2>
+      <h3 style={{ marginTop: 12 }}>{current.da}</h3>
 
-      {options.map((opt, i) => (
-        <button 
-          key={i} 
-          onClick={() => checkAnswer(opt)}
-          style={{ display: "block", margin: "8px 0" }}
+      {options.map(o => (
+        <button
+          key={o.id}
+          onClick={() => pick(o)}
+          style={{ display: "block", marginBottom: 8 }}
         >
-          {opt}
+          {o.en}
         </button>
       ))}
-
-      <p>{feedback}</p>
     </div>
   );
 }
