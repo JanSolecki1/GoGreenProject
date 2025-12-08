@@ -1,32 +1,30 @@
-import React, { useState, useEffect } from "react"
-import MatchGame from "../components/MatchGame"
-import { addLearnedWord } from "../utils/storage"
-import { supabase } from "../utils/supabase"
-import { useNavigate } from "react-router-dom"
+import React, { useState, useEffect } from "react";
+import MatchGame from "../components/MatchGame";
+import { supabase } from "../utils/supabase";
+import { useNavigate } from "react-router-dom";
 
 export default function MiniGame() {
-  const [words, setWords] = useState([])
-  const nav = useNavigate()
+  const [words, setWords] = useState([]);
+  const nav = useNavigate();
 
   useEffect(() => {
-    loadWords()
-  }, [])
+    loadWords();
+  }, []);
 
   async function loadWords() {
     const { data } = await supabase
       .from("words")
       .select("*")
       .order("id")
-      .limit(10)
+      .limit(10);
 
-    setWords(data)
+    setWords(data);
   }
 
   async function handleFinish(ids) {
-    for (const id of ids) {
-      await addLearnedWord(id)
-    }
-    nav("/progress")
+    const inserts = ids.map((id) => ({ word_id: id }));
+    await supabase.from("progress").insert(inserts);
+    nav("/progress");
   }
 
   return (
@@ -34,5 +32,5 @@ export default function MiniGame() {
       <h2>Word Match</h2>
       <MatchGame words={words} onFinish={handleFinish} />
     </div>
-  )
+  );
 }

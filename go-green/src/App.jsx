@@ -1,24 +1,61 @@
-import { Routes, Route } from 'react-router-dom'
-import Splash from './pages/Splash.jsx'
-import DailyWords from './pages/DailyWords.jsx'
-import MiniGame from './pages/MiniGame.jsx'
-import Progress from './pages/Progress.jsx'
-import Settings from './pages/Settings.jsx'
-import NavBar from './components/NavBar.jsx'
+import React from "react";
+import { Routes, Route } from "react-router-dom";
 
-function App() {
+import Login from "./pages/Login";
+import Splash from "./pages/Splash";
+import DailyWords from "./pages/DailyWords";
+import MiniGame from "./pages/MiniGame";
+import Progress from "./pages/Progress";
+import Settings from "./pages/Settings";
+
+import NavBar from "./components/NavBar";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+export default function App() {
   return (
-<div> 
-  <NavBar /> 
-  <Routes> 
-    <Route path="/" element={<Splash />} /> 
-    <Route path="/words" element={<DailyWords />} /> 
-    <Route path="/game" element={<MiniGame />} /> 
-    <Route path="/progress" element={<Progress />} /> 
-    <Route path="/settings" element={<Settings />} /> 
-    </Routes> 
-</div>
-  )
-}
+    <div>
+      <NavBar />
 
-export default App
+      <Routes>
+        <Route path="/" element={<Splash />} />
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/words"
+          element={
+            <ProtectedRoute>
+              <DailyWords />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/game"
+          element={
+            <ProtectedRoute>
+              <MiniGame />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <Progress />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </div>
+  );
+}
