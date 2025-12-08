@@ -3,8 +3,8 @@ import { Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Splash from "./pages/Splash";
-import DailyWords from "./pages/DailyWords";
-import MiniGame from "./pages/MiniGame";
+import SwipeDaily from "./pages/SwipeDaily";  
+import GameFlow from "./pages/GameFlow";       
 import Progress from "./pages/Progress";
 import Settings from "./pages/Settings";
 
@@ -17,14 +17,16 @@ export default function App() {
       <NavBar />
 
       <Routes>
+        {/* Public routes */}
         <Route path="/" element={<Splash />} />
         <Route path="/login" element={<Login />} />
 
+        {/* Protected routes */}
         <Route
           path="/words"
           element={
             <ProtectedRoute>
-              <DailyWords />
+              <SwipeDaily />
             </ProtectedRoute>
           }
         />
@@ -33,7 +35,7 @@ export default function App() {
           path="/game"
           element={
             <ProtectedRoute>
-              <MiniGame />
+              <GameFlow />
             </ProtectedRoute>
           }
         />
