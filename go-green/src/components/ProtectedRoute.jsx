@@ -1,27 +1,12 @@
-// src/components/ProtectedRoute.jsx
-import React, { useEffect, useState } from "react";
-import { supabase } from "../utils/supabase";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { Navigate } from "react-router-dom";
 
 export default function ProtectedRoute({ children }) {
-  const [loading, setLoading] = useState(true);
-  const [allowed, setAllowed] = useState(false);
-  const nav = useNavigate();
+  const userId = localStorage.getItem("user_id");
 
-  useEffect(() => {
-    async function check() {
-      const { data } = await supabase.auth.getUser();
-      if (!data?.user) {
-        nav("/login");
-        return;
-      }
-      setAllowed(true);
-      setLoading(false);
-    }
-    check();
-  }, [nav]);
+  if (!userId) {
+    return <Navigate to="/login" replace />;
+  }
 
-  if (loading) return <div style={{ padding: 20 }}>Checking session...</div>;
-
-  return allowed ? children : null;
+  return children;
 }

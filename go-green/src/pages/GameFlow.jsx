@@ -1,145 +1,86 @@
-// src/pages/GameFlow.jsx
 import React, { useEffect, useState } from "react";
+import { supabase } from "../utils/supabase";
 import MultipleChoiceGame from "../components/MultipleChoiceGame";
 import MatchingGame from "../components/MatchingGame";
 import MissingLetterGame from "../components/MissingLetterGame";
-import SuccessAnimation from "../components/SuccessAnimation";
-import { supabase } from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
 
 export default function GameFlow() {
-  const [toVerify, setToVerify] = useState([]);
-  const [stage, setStage] = useState(1); // 1..3
-  const [stageCompleted, setStageCompleted] = useState(false);
-  const [showSuccessAnim, setShowSuccessAnim] = useState(false);
-  const [allSaved, setAllSaved] = useState(false);
+  const [words, setWords] = useState([]);
+  const [stage, setStage] = useState(0); // 0 = MCQ, 1 = Match, 2 = MissingLetter
+  const [loading, setLoading] = useState(true);
+
   const nav = useNavigate();
 
   useEffect(() => {
-    loadToVerify();
+    loadWordsToVerify();
   }, []);
 
-  async function loadToVerify() {
-    const { data: sessionData } = await supabase.auth.getUser();
-    const user = sessionData?.user;
-    if (!user) {
-      console.warn("No user for GameFlow");
-      return;
-    }
+  async function loadWordsToVerify() {
+    setLoading(true);
 
-    // fetch user's to_verify with joined words
+    const userId = localStorage.getItem("user_id");
+
     const { data, error } = await supabase
       .from("user_to_verify")
-      .select("id, word_id, words(*)")
-      .eq("user_id", user.id);
+      .select("word_id, words(*)")
+      .eq("user_id", userId);
 
     if (error) {
-      console.error("Error loading to_verify:", error);
-      setToVerify([]);
+      console.error(error);
+      setLoading(false);
       return;
     }
 
-    // data: array of { id, word_id, words: { id, da, en } }
-    const words = (data || []).map(r => r.words).filter(Boolean);
-    setToVerify(words);
+    const list = data.map(row => row.words);
+
+    setWords(list);
+    setLoading(false);
   }
 
-  function handleStageComplete() {
-    setStageCompleted(true);
-  }
+  async function finishGame() {
+    const userId = localStorage.getItem("user_id");
 
-  async function finishAndSave() {
-    // save known words (user_known_words), delete user_to_verify, update streak, show animation
-    const { data: sessionData } = await supabase.auth.getUser();
-    const user = sessionData?.user;
-    if (!user) {
-      console.warn("No user for saving");
-      setAllSaved(true);
-      return;
+    // insert known words
+    for (const w of words) {
+      await supabase
+        .from("user_known_words")
+        .insert({ user_id: userId, word_id: w.id });
     }
-    const inserts = (toVerify || []).map(w => ({ user_id: user.id, word_id: w.id }));
-    const { error: insErr } = await supabase.from("user_known_words").insert(inserts);
-    if (insErr) console.error("Insert known words error:", insErr);
 
-    // delete user_to_verify entries for user
-    const { error: delErr } = await supabase.from("user_to_verify").delete().eq("user_id", user.id);
-    if (delErr) console.error("Deleting user_to_verify error:", delErr);
+    // clear user_to_verify
+    await supabase
+      .from("user_to_verify")
+      .delete()
+      .eq("user_id", userId);
 
-    // update streak
-    await updateStreak(user.id);
+    alert("🎉 Great job! You learned new words!");
 
-    // show success animation then go to summary
-    setShowSuccessAnim(true);
+    nav("/progress");
   }
 
-  async function updateStreak(userId) {
-    const today = new Date().toISOString().slice(0, 10);
-    const { data } = await supabase.from("user_streak").select("*").eq("user_id", userId).single();
-    if (!data) {
-      await supabase.from("user_streak").insert({ user_id: userId, streak_days: 1, last_played_date: today });
-    } else {
-      if (data.last_played_date !== today) {
-        await supabase.from("user_streak").update({
-          streak_days: data.streak_days + 1,
-          last_played_date: today
-        }).eq("user_id", userId);
-      }
-    }
+  function nextStage() {
+    if (stage < 2) setStage(stage + 1);
+    else finishGame();
   }
 
-  // after animation done, mark allSaved and show final screen
-  function onAnimationDone() {
-    setShowSuccessAnim(false);
-    setAllSaved(true);
-  }
-
-  if (showSuccessAnim) {
-    return <SuccessAnimation wordsCount={toVerify.length} onDone={onAnimationDone} />;
-  }
-
-  if (allSaved) {
-    return (
-      <div style={{ padding: 20 }}>
-        <h2>Success — verified!</h2>
-        <p>{toVerify.length} words added to Known Words.</p>
-        <div style={{ marginTop: 12 }}>
-          <button onClick={() => nav("/progress")}>See progress</button>
-          <button style={{ marginLeft: 8 }} onClick={() => nav("/words")}>Practice more</button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!toVerify || toVerify.length === 0) {
-    return (
-      <div style={{ padding: 20 }}>
-        <h2>No words to verify</h2>
-        <p>Go to /words and swipe RIGHT on 10 words to verify them.</p>
-      </div>
-    );
-  }
+  if (loading) return <div style={{ padding: 20 }}>Loading games...</div>;
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Mini games — stage {stage} / 3</h2>
+      <h2>Mini-games</h2>
 
-      {stage === 1 && <MultipleChoiceGame words={toVerify} onComplete={handleStageComplete} />}
-      {stage === 2 && <MatchingGame words={toVerify} onComplete={handleStageComplete} />}
-      {stage === 3 && <MissingLetterGame words={toVerify} onComplete={handleStageComplete} />}
+      {stage === 0 && (
+        <MultipleChoiceGame words={words} onComplete={nextStage} />
+      )}
 
-      <div style={{ marginTop: 12 }}>
-        {!stageCompleted ? (
-          <div>Complete the game to unlock Next</div>
-        ) : (
-          <>
-            {stage < 3 ? (
-              <button onClick={() => { setStage(s => s + 1); setStageCompleted(false); }}>Next game</button>
-            ) : (
-              <button onClick={() => finishAndSave()}>Finish & Save</button>
-            )}
-          </>
-        )}
-      </div>
+      {stage === 1 && (
+        <MatchingGame words={words} onComplete={nextStage} />
+      )}
+
+      {stage === 2 && (
+        <MissingLetterGame words={words} onComplete={nextStage} />
+      )}
     </div>
   );
 }

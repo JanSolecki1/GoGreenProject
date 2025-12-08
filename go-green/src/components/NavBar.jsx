@@ -1,29 +1,27 @@
-// src/components/NavBar.jsx
 import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "../utils/supabase";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function NavBar() {
-  const loc = useLocation();
   const nav = useNavigate();
+  const userId = localStorage.getItem("user_id");
 
-  async function logout() {
-    await supabase.auth.signOut();
+  function logout() {
+    localStorage.removeItem("user_id");
     nav("/login");
   }
 
   return (
-    <nav style={{ padding: 8, borderBottom: "1px solid #ccc" }}>
-      <Link to="/">Splash</Link> |{" "}
-      <Link to="/words">Words</Link> |{" "}
-      <Link to="/game">Game</Link> |{" "}
-      <Link to="/progress">Progress</Link> |{" "}
-      <Link to="/settings">Settings</Link> |{" "}
-      <button onClick={logout} style={{ fontSize: 12 }}>Logout</button>
-
-      <div style={{ fontSize: 12, marginTop: 6 }}>
-        Current: {loc.pathname}
-      </div>
+    <nav style={{ padding: 12, borderBottom: "1px solid #ddd" }}>
+      <Link to="/">Home</Link> |
+      {userId && (
+        <>
+          <Link to="/words"> Daily Words</Link> |
+          <Link to="/game"> Games</Link> |
+          <Link to="/progress"> Progress</Link> |
+          <Link to="/settings"> Settings</Link> |
+          <button onClick={logout}>Logout</button>
+        </>
+      )}
     </nav>
   );
 }

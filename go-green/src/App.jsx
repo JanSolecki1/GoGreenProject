@@ -2,9 +2,8 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
-import Splash from "./pages/Splash";
-import SwipeDaily from "./pages/SwipeDaily";  
-import GameFlow from "./pages/GameFlow";       
+import SwipeDaily from "./pages/SwipeDaily";
+import GameFlow from "./pages/GameFlow";
 import Progress from "./pages/Progress";
 import Settings from "./pages/Settings";
 
@@ -14,49 +13,37 @@ import ProtectedRoute from "./components/ProtectedRoute";
 export default function App() {
   return (
     <div>
+
       <NavBar />
 
       <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Splash />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/words"
-          element={
-            <ProtectedRoute>
-              <SwipeDaily />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/words" element={
+          <ProtectedRoute>
+            <SwipeDaily />
+          </ProtectedRoute>
+        }/>
 
-        <Route
-          path="/game"
-          element={
-            <ProtectedRoute>
-              <GameFlow />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/game" element={
+          <ProtectedRoute>
+            <GameFlow />
+          </ProtectedRoute>
+        }/>
 
-        <Route
-          path="/progress"
-          element={
-            <ProtectedRoute>
-              <Progress />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/progress" element={
+          <ProtectedRoute>
+            <Progress />
+          </ProtectedRoute>
+        }/>
 
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }/>
+
+        <Route path="*" element={<Login />} />
       </Routes>
     </div>
   );

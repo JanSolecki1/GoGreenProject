@@ -1,64 +1,51 @@
-// src/pages/Login.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { supabase } from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [name, setName] = useState("");
   const nav = useNavigate();
-
-  // if already logged in, go to /words
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        nav("/words");
-      }
-    });
-  }, [nav]);
 
   async function handleLogin(e) {
     e.preventDefault();
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-        options: {
-  emailRedirectTo: `${window.location.origin}/`,
-}
-    });
+    // find or create user
+    const { data: existing } = await supabase
+      .from("users")
+      .select("*")
+      .eq("name", name)
+      .maybeSingle();
 
-    if (error) {
-      alert(error.message);
-      return;
+    let userId;
+
+    if (existing) {
+      userId = existing.id;
+    } else {
+      const { data: newUser } = await supabase
+        .from("users")
+        .insert({ name })
+        .select()
+        .single();
+
+      userId = newUser.id;
     }
 
-    setSent(true);
-  }
+    localStorage.setItem("user_id", userId);
 
-  if (sent) {
-    return (
-      <div style={{ padding: 20 }}>
-        <h2>Check your email</h2>
-        <p>Please click the magic link to sign in.</p>
-      </div>
-    );
+    nav("/words");
   }
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Login</h2>
+      <h2>Enter username</h2>
 
       <form onSubmit={handleLogin}>
-        <label>Email</label><br />
-        <input
-          type="email"
-          value={email}
+        <input 
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ marginBottom: 12 }}
-        /><br />
-
-        <button type="submit">Send Magic Link</button>
+        />
+        <button>Continue</button>
       </form>
     </div>
   );

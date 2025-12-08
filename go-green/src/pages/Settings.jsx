@@ -1,11 +1,10 @@
-import React from 'react'
-
+import React from "react";
 
 export default function Settings() {
-return (
-<div style={{ padding: 20 }}>
-<h2>Settings</h2>
-<p>No settings yet — prototype.</p>
-</div>
-)
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Settings</h2>
+      <p>Minimal settings placeholder.</p>
+    </div>
+  );
 }

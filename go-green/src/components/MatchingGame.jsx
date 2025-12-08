@@ -1,76 +1,66 @@
-// src/components/MatchingGame.jsx
-import React, { useEffect, useState } from "react";
-import { shuffle } from "../utils/shuffle";
+import React, { useState } from "react";
 
-export default function MatchingGame({ words = [], onComplete }) {
-  const [left, setLeft] = useState([]);
-  const [right, setRight] = useState([]);
-  const [selectedL, setSelectedL] = useState(null);
-  const [selectedR, setSelectedR] = useState(null);
+export default function MatchingGame({ words, onComplete }) {
+  const [left] = useState(words.map(w => ({ id: w.id, text: w.da })));
+  const [right] = useState(words.map(w => ({ id: w.id, text: w.en })).sort(() => Math.random() - 0.5));
+  const [selectedLeft, setSelectedLeft] = useState(null);
   const [matched, setMatched] = useState([]);
 
-  useEffect(() => {
-    if (words.length > 0) {
-      setLeft(shuffle(words.slice()));
-      setRight(shuffle(words.slice()));
-      setMatched([]);
-      setSelectedL(null);
-      setSelectedR(null);
-    }
-  }, [words]);
+  function chooseRight(r) {
+    if (!selectedLeft) return;
 
-  useEffect(() => {
-    if (matched.length === words.length && words.length > 0) {
-      if (onComplete) onComplete();
-    }
-  }, [matched, words, onComplete]);
+    if (r.id === selectedLeft.id) {
+      // correct
+      const next = [...matched, r.id];
+      setMatched(next);
+      setSelectedLeft(null);
 
-  function clickLeft(item) {
-    if (matched.includes(item.id)) return;
-    setSelectedL(item);
-    if (selectedR) tryMatch(item, selectedR);
-  }
+      if (next.length === words.length) onComplete();
 
-  function clickRight(item) {
-    if (matched.includes(item.id)) return;
-    setSelectedR(item);
-    if (selectedL) tryMatch(selectedL, item);
-  }
-
-  function tryMatch(l, r) {
-    if (l.id === r.id) {
-      setMatched(prev => [...prev, l.id]);
     } else {
-      // incorrect: show nothing, let user try again
+      // incorrect
+      setSelectedLeft(null);
     }
-    setSelectedL(null);
-    setSelectedR(null);
   }
 
   return (
     <div>
-      <h3>Matching game</h3>
-      <div style={{ display: "flex", gap: 24 }}>
+      <h3>Match the pairs</h3>
+
+      <div style={{ display: "flex", gap: 30 }}>
         <div>
-          <h4>Danish</h4>
-          {left.map(item => (
-            <div key={item.id} onClick={() => clickLeft(item)} style={{ padding: 6, cursor: "pointer", opacity: matched.includes(item.id) ? 0.4 : 1 }}>
-              {item.da}
+          {left.map(l => (
+            <div
+              key={l.id}
+              onClick={() => setSelectedLeft(l)}
+              style={{
+                padding: 6,
+                opacity: matched.includes(l.id) ? 0.3 : 1,
+                background: selectedLeft?.id === l.id ? "#ddd" : "none",
+                cursor: "pointer"
+              }}
+            >
+              {l.text}
             </div>
           ))}
         </div>
 
         <div>
-          <h4>English</h4>
-          {right.map(item => (
-            <div key={item.id} onClick={() => clickRight(item)} style={{ padding: 6, cursor: "pointer", opacity: matched.includes(item.id) ? 0.4 : 1 }}>
-              {item.en}
+          {right.map(r => (
+            <div
+              key={r.id}
+              onClick={() => chooseRight(r)}
+              style={{
+                padding: 6,
+                opacity: matched.includes(r.id) ? 0.3 : 1,
+                cursor: "pointer"
+              }}
+            >
+              {r.text}
             </div>
           ))}
         </div>
       </div>
-
-      <div style={{ marginTop: 12 }}>Matched: {matched.length} / {words.length}</div>
     </div>
   );
 }
