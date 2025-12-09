@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 
-export default function MissingLetterGame({ words, onComplete }) {
+export default function MultipleChoiceGame({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
   const [current, setCurrent] = useState(null);
-  const [masked, setMasked] = useState("");
-  const [missingPos, setMissingPos] = useState(null); // <- poprawka
   const [options, setOptions] = useState([]);
   const [feedback, setFeedback] = useState("");
 
@@ -16,36 +14,24 @@ export default function MissingLetterGame({ words, onComplete }) {
 
   useEffect(() => {
     if (!current) return;
-    prepareWord(current);
+    prepareOptions(current);
   }, [current]);
 
-  function prepareWord(word) {
-    // losujemy pozycję
-    const pos = Math.floor(Math.random() * word.da.length);
-    const correct = word.da[pos];
-
-    setMissingPos(pos); // <- PRZECHOWUJEMY POPRAWNĄ POZYCJĘ
-
-    // tworzymy maskowane słowo
-    const maskedWord =
-      word.da.slice(0, pos) + "_" + word.da.slice(pos + 1);
-
-    setMasked(maskedWord);
-
-    // trzy opcje: correct + 2 złe
-    const alphabet = "abcdefghijklmnopqrstuvwxyzæøå".split("");
-    const wrong = alphabet
-      .filter((l) => l !== correct)
+  function prepareOptions(word) {
+    const wrong = [...words]
+      .filter((w) => w.id !== word.id)
       .sort(() => Math.random() - 0.5)
       .slice(0, 2);
 
-    setOptions([correct, ...wrong].sort(() => Math.random() - 0.5));
+    const opts = [word, ...wrong]
+      .map((w) => w.da)
+      .sort(() => Math.random() - 0.5);
+
+    setOptions(opts);
   }
 
-  function pick(letter) {
-    const correct = current.da[missingPos];
-
-    if (letter !== correct) {
+  function pick(answer) {
+    if (answer !== current.da) {
       setFeedback("Incorrect — next word");
       return setTimeout(() => {
         setFeedback("");
@@ -58,11 +44,12 @@ export default function MissingLetterGame({ words, onComplete }) {
     setTimeout(() => {
       setFeedback("");
       nextWord();
-    }, 400);
+    }, 300);
   }
 
   function nextWord() {
     const newQ = queue.slice(1);
+
     if (newQ.length === 0) return onComplete();
 
     setQueue(newQ);
@@ -73,30 +60,23 @@ export default function MissingLetterGame({ words, onComplete }) {
 
   return (
     <div className="page">
-      <h2>Missing Letter</h2>
+      <h2>Multiple Choice</h2>
 
       <div className="card">
-        <h3>{masked}</h3>
+        <p>Meaning:</p>
+        <h3>{current.en}</h3>
       </div>
 
       <div className="btn-group">
         {options.map((o, i) => (
-          <button
-            key={i}
-            className="btn btn-outline"
-            onClick={() => pick(o)}
-          >
+          <button key={i} className="btn btn-outline" onClick={() => pick(o)}>
             {o}
           </button>
         ))}
       </div>
 
       {feedback && (
-        <div
-          className={`feedback ${
-            feedback.includes("Correct") ? "success" : "error"
-          }`}
-        >
+        <div className={`feedback ${feedback.includes("Correct") ? "success" : "error"}`}>
           {feedback}
         </div>
       )}
