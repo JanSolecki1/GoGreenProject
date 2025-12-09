@@ -1,90 +1,105 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function MultipleChoiceGame({ words = [], onComplete }) {
+export default function MissingLetterGame({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
   const [current, setCurrent] = useState(null);
+  const [masked, setMasked] = useState("");
+  const [missingPos, setMissingPos] = useState(null); // <- poprawka
   const [options, setOptions] = useState([]);
   const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
-    if (!words || words.length === 0) {
-      setQueue([]);
-      setCurrent(null);
-      return;
-    }
-    const shuffled = [...words].sort(() => Math.random() - 0.5);
-    setQueue(shuffled);
-    setCurrent(shuffled[0]);
+    const q = [...words].sort(() => Math.random() - 0.5);
+    setQueue(q);
+    setCurrent(q[0]);
   }, [words]);
 
   useEffect(() => {
     if (!current) return;
-    generateOptions(current);
-    // eslint-disable-next-line
+    prepareWord(current);
   }, [current]);
 
-  function generateOptions(correct) {
-    const wrong = words.filter(w => w.id !== correct.id).sort(() => Math.random() - 0.5).slice(0, 2);
-    const opts = [...wrong, correct].sort(() => Math.random() - 0.5);
-    setOptions(opts);
+  function prepareWord(word) {
+    // losujemy pozycję
+    const pos = Math.floor(Math.random() * word.da.length);
+    const correct = word.da[pos];
+
+    setMissingPos(pos); // <- PRZECHOWUJEMY POPRAWNĄ POZYCJĘ
+
+    // tworzymy maskowane słowo
+    const maskedWord =
+      word.da.slice(0, pos) + "_" + word.da.slice(pos + 1);
+
+    setMasked(maskedWord);
+
+    // trzy opcje: correct + 2 złe
+    const alphabet = "abcdefghijklmnopqrstuvwxyzæøå".split("");
+    const wrong = alphabet
+      .filter((l) => l !== correct)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 2);
+
+    setOptions([correct, ...wrong].sort(() => Math.random() - 0.5));
   }
 
-  function nextWordAfterWrong(oldQueue) {
-    // push current to back and take next
-    const newQueue = [...oldQueue.slice(1), oldQueue[0]];
-    setQueue(newQueue);
-    setCurrent(newQueue[0]);
-  }
+  function pick(letter) {
+    const correct = current.da[missingPos];
 
-  function handlePick(opt) {
-    if (!current) return;
-    if (opt.id === current.id) {
-      // correct: remove this word from queue (advance)
-      const newQueue = queue.slice(1);
-      if (newQueue.length === 0) {
-        setFeedback("Correct!");
-        setTimeout(() => onComplete(), 300);
-      } else {
-        setFeedback("Correct!");
-        setTimeout(() => {
-          setFeedback("");
-          setQueue(newQueue);
-          setCurrent(newQueue[0]);
-        }, 250);
-      }
-    } else {
-      // wrong: show feedback and move current to back (new word appears)
-      setFeedback("Incorrect — try next word");
-      const oldQueue = queue.length ? queue : [current];
-      setTimeout(() => {
+    if (letter !== correct) {
+      setFeedback("Incorrect — next word");
+      return setTimeout(() => {
         setFeedback("");
-        nextWordAfterWrong(oldQueue);
-      }, 500);
+        nextWord();
+      }, 600);
     }
+
+    setFeedback("Correct!");
+
+    setTimeout(() => {
+      setFeedback("");
+      nextWord();
+    }, 400);
   }
 
-  if (!current) return <div>No questions available.</div>;
+  function nextWord() {
+    const newQ = queue.slice(1);
+    if (newQ.length === 0) return onComplete();
+
+    setQueue(newQ);
+    setCurrent(newQ[0]);
+  }
+
+  if (!current) return null;
 
   return (
-    <div>
-      <h2>Multiple Choice</h2>
-      <h3 style={{ marginTop: 12 }}>{current.da}</h3>
+    <div className="page">
+      <h2>Missing Letter</h2>
 
-      <div style={{ marginTop: 12 }}>
-        {options.map(o => (
+      <div className="card">
+        <h3>{masked}</h3>
+      </div>
+
+      <div className="btn-group">
+        {options.map((o, i) => (
           <button
-            key={o.id}
-            onClick={() => handlePick(o)}
-            style={{ display: "block", width: "100%", padding: 16, marginBottom: 10, fontSize: 18 }}
+            key={i}
+            className="btn btn-outline"
+            onClick={() => pick(o)}
           >
-            {o.en}
+            {o}
           </button>
         ))}
       </div>
 
-      <div style={{ height: 28, marginTop: 8 }}>
-        {feedback && <strong>{feedback}</strong>}
-      </div>
+      {feedback && (
+        <div
+          className={`feedback ${
+            feedback.includes("Correct") ? "success" : "error"
+          }`}
+        >
+          {feedback}
+        </div>
+      )}
     </div>
   );
 }

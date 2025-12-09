@@ -1,20 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function MissingLetterGame({ words = [], onComplete }) {
+export default function MissingLetterGame({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
   const [current, setCurrent] = useState(null);
   const [masked, setMasked] = useState("");
+  const [missingPos, setMissingPos] = useState(null);
   const [options, setOptions] = useState([]);
   const [feedback, setFeedback] = useState("");
 
-  const alphabet = "abcdefghijklmnopqrstuvwxyzæøå".split("");
-
   useEffect(() => {
-    if (!words || words.length === 0) {
-      setQueue([]);
-      setCurrent(null);
-      return;
-    }
     const q = [...words].sort(() => Math.random() - 0.5);
     setQueue(q);
     setCurrent(q[0]);
@@ -22,71 +16,81 @@ export default function MissingLetterGame({ words = [], onComplete }) {
 
   useEffect(() => {
     if (!current) return;
-    prepare(current);
-    // eslint-disable-next-line
+    prepareWord(current);
   }, [current]);
 
-  function prepare(word) {
-    // choose a non-space position
-    let pos = Math.floor(Math.random() * word.da.length);
-    if (word.da[pos] === " ") {
-      pos = [...word.da].findIndex(ch => ch !== " ");
-      if (pos === -1) pos = 0;
-    }
+  function prepareWord(word) {
+    const pos = Math.floor(Math.random() * word.da.length);
     const correct = word.da[pos];
-    const wrongs = alphabet.filter(l => l !== correct).sort(() => Math.random() - 0.5).slice(0, 2);
-    const opts = [correct, ...wrongs].sort(() => Math.random() - 0.5);
-    setOptions(opts);
-    setMasked(word.da.slice(0, pos) + "_" + word.da.slice(pos + 1));
+
+    setMissingPos(pos);
+
+    const maskedWord =
+      word.da.slice(0, pos) + "_" + word.da.slice(pos + 1);
+    setMasked(maskedWord);
+
+    const alphabet = "abcdefghijklmnopqrstuvwxyzæøå".split("");
+    const wrong = alphabet
+      .filter((l) => l !== correct)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 2);
+
+    setOptions([correct, ...wrong].sort(() => Math.random() - 0.5));
   }
 
   function pick(letter) {
-    const pos = masked.indexOf("_");
-    const correct = current.da[pos];
+    const correct = current.da[missingPos];
 
-    if (letter === correct) {
-      // correct -> remove current
-      setFeedback("Correct!");
-      setTimeout(() => {
+    if (letter !== correct) {
+      setFeedback("Incorrect — next word");
+      return setTimeout(() => {
         setFeedback("");
-        const remaining = queue.slice(1);
-        if (remaining.length === 0) {
-          onComplete();
-        } else {
-          setQueue(remaining);
-          setCurrent(remaining[0]);
-        }
-      }, 300);
-    } else {
-      // incorrect -> show feedback and move to next
-      setFeedback("Incorrect — moving to next word");
-      setTimeout(() => {
-        setFeedback("");
-        const newQueue = [...queue.slice(1), queue[0]]; // push to back
-        setQueue(newQueue);
-        setCurrent(newQueue[0]);
-      }, 500);
+        nextWord();
+      }, 600);
     }
+
+    setFeedback("Correct!");
+    setTimeout(() => {
+      setFeedback("");
+      nextWord();
+    }, 400);
   }
 
-  if (!current) return <div>No words here.</div>;
+  function nextWord() {
+    const newQ = queue.slice(1);
+    if (newQ.length === 0) return onComplete();
+
+    setQueue(newQ);
+    setCurrent(newQ[0]);
+  }
+
+  if (!current) return null;
 
   return (
-    <div>
+    <div className="page">
       <h2>Missing Letter</h2>
-      <h3 style={{ marginTop: 12 }}>{masked}</h3>
 
-      <div style={{ marginTop: 12 }}>
+      <div className="card">
+        <h3>{masked}</h3>
+      </div>
+
+      <div className="btn-group">
         {options.map((o, i) => (
-          <button key={i} onClick={() => pick(o)} style={{ display: "block", width: "100%", padding: 14, marginBottom: 8, fontSize: 18 }}>
+          <button
+            key={i}
+            className="btn btn-outline"
+            onClick={() => pick(o)}
+          >
             {o}
           </button>
         ))}
       </div>
 
-      <div style={{ height: 28, marginTop: 8 }}>
-        {feedback && <strong>{feedback}</strong>}
-      </div>
+      {feedback && (
+        <div className={`feedback ${feedback.includes("Correct") ? "success" : "error"}`}>
+          {feedback}
+        </div>
+      )}
     </div>
   );
 }
