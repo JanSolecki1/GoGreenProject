@@ -6,6 +6,8 @@ export default function SwipeDaily() {
   const [words, setWords] = useState([]);
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [knownCount, setKnownCount] = useState(0);
+
   const nav = useNavigate();
 
   useEffect(() => {
@@ -28,14 +30,13 @@ export default function SwipeDaily() {
 
     // load all words
     const { data: all } = await supabase.from("words").select("*");
-
     if (!all) {
       setWords([]);
       setLoading(false);
       return;
     }
 
-    // filter unknown
+    // unknown words
     const unknown = all.filter(w => !knownIds.includes(w.id));
 
     // pick 10 random
@@ -48,32 +49,30 @@ export default function SwipeDaily() {
   async function handleKnow() {
     const userId = localStorage.getItem("user_id");
     const w = words[index];
-
     if (!w) return;
 
-    // insert to user_to_verify
-    const { error } = await supabase
-      .from("user_to_verify")
-      .insert([{ user_id: userId, word_id: w.id }]);
+    // add only RIGHT swipes
+    await supabase.from("user_to_verify").insert([
+      { user_id: userId, word_id: w.id }
+    ]);
 
-    if (error && error.code !== "23505") {
-      console.error("Insert error:", error);
-    }
+    // increase knownCount
+    setKnownCount(c => {
+      const newValue = c + 1;
+
+      // when 10 words selected → GO TO GAME
+      if (newValue === 10) {
+        setTimeout(() => nav("/game"), 300);
+      }
+
+      return newValue;
+    });
 
     goNext();
-
-    // check if user has 10 words to verify
-    const { data: verifyList } = await supabase
-      .from("user_to_verify")
-      .select("id")
-      .eq("user_id", userId);
-
-    if (verifyList.length >= 10) {
-      setTimeout(() => nav("/game"), 200);
-    }
   }
 
   function handleNotYet() {
+    // LEFT → does NOT add anything
     goNext();
   }
 
@@ -81,8 +80,8 @@ export default function SwipeDaily() {
     if (index + 1 < words.length) {
       setIndex(i => i + 1);
     } else {
-      // if no more words, still go to game
-      setTimeout(() => nav("/game"), 200);
+      // if user has not selected 10 words, still go to game
+      setTimeout(() => nav("/game"), 300);
     }
   }
 
@@ -111,6 +110,10 @@ export default function SwipeDaily() {
 
         <div style={{ marginTop: 10 }}>
           {index + 1} / {words.length}
+        </div>
+
+        <div style={{ marginTop: 10 }}>
+          Selected for training: {knownCount} / 10
         </div>
       </div>
     </div>

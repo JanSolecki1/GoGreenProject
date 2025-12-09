@@ -1,63 +1,90 @@
 import React, { useState, useEffect } from "react";
 
 export default function MultipleChoiceGame({ words = [], onComplete }) {
-  const [index, setIndex] = useState(0);
+  const [queue, setQueue] = useState([]);
+  const [current, setCurrent] = useState(null);
   const [options, setOptions] = useState([]);
+  const [feedback, setFeedback] = useState("");
 
-  // guard: jeśli nie ma words lub words.length === 0 -> nic nie renderuj
   useEffect(() => {
-    setIndex(0);
+    if (!words || words.length === 0) {
+      setQueue([]);
+      setCurrent(null);
+      return;
+    }
+    const shuffled = [...words].sort(() => Math.random() - 0.5);
+    setQueue(shuffled);
+    setCurrent(shuffled[0]);
   }, [words]);
 
   useEffect(() => {
-    if (!words || words.length === 0) return;
-    const current = words[index];
     if (!current) return;
-
-    const wrong = words
-      .filter(w => w.id !== current.id)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2);
-
-    const opts = [...wrong, current].sort(() => Math.random() - 0.5);
-    setOptions(opts);
+    generateOptions(current);
     // eslint-disable-next-line
-  }, [words, index]);
+  }, [current]);
 
-  if (!words || words.length === 0) {
-    return <div>Nothing to practice here.</div>;
+  function generateOptions(correct) {
+    const wrong = words.filter(w => w.id !== correct.id).sort(() => Math.random() - 0.5).slice(0, 2);
+    const opts = [...wrong, correct].sort(() => Math.random() - 0.5);
+    setOptions(opts);
   }
 
-  const current = words[index];
-  if (!current) return <div>Loading question...</div>;
+  function nextWordAfterWrong(oldQueue) {
+    // push current to back and take next
+    const newQueue = [...oldQueue.slice(1), oldQueue[0]];
+    setQueue(newQueue);
+    setCurrent(newQueue[0]);
+  }
 
-  function pick(option) {
-    if (option.id === current.id) {
-      // correct
-      if (index + 1 === words.length) {
+  function handlePick(opt) {
+    if (!current) return;
+    if (opt.id === current.id) {
+      // correct: remove this word from queue (advance)
+      const newQueue = queue.slice(1);
+      if (newQueue.length === 0) {
+        setFeedback("Correct!");
         setTimeout(() => onComplete(), 300);
       } else {
-        setIndex(i => i + 1);
+        setFeedback("Correct!");
+        setTimeout(() => {
+          setFeedback("");
+          setQueue(newQueue);
+          setCurrent(newQueue[0]);
+        }, 250);
       }
     } else {
-      // wrong -> we simply show nothing else, user can try again (optionally add feedback)
+      // wrong: show feedback and move current to back (new word appears)
+      setFeedback("Incorrect — try next word");
+      const oldQueue = queue.length ? queue : [current];
+      setTimeout(() => {
+        setFeedback("");
+        nextWordAfterWrong(oldQueue);
+      }, 500);
     }
   }
+
+  if (!current) return <div>No questions available.</div>;
 
   return (
     <div>
       <h2>Multiple Choice</h2>
       <h3 style={{ marginTop: 12 }}>{current.da}</h3>
 
-      {options.map(o => (
-        <button
-          key={o.id}
-          onClick={() => pick(o)}
-          style={{ display: "block", marginBottom: 8 }}
-        >
-          {o.en}
-        </button>
-      ))}
+      <div style={{ marginTop: 12 }}>
+        {options.map(o => (
+          <button
+            key={o.id}
+            onClick={() => handlePick(o)}
+            style={{ display: "block", width: "100%", padding: 16, marginBottom: 10, fontSize: 18 }}
+          >
+            {o.en}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ height: 28, marginTop: 8 }}>
+        {feedback && <strong>{feedback}</strong>}
+      </div>
     </div>
   );
 }
