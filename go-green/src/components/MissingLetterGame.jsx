@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { shuffle } from "../utils/gameUtils";
 
 export default function MissingLetterGame({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
@@ -8,35 +9,27 @@ export default function MissingLetterGame({ words, onComplete }) {
   const [options, setOptions] = useState([]);
   const [feedback, setFeedback] = useState("");
 
+  const alphabet = "abcdefghijklmnopqrstuvwxyzæøå".split("");
+
   useEffect(() => {
-    const q = [...words].sort(() => Math.random() - 0.5);
+    const q = shuffle(words);
     setQueue(q);
     setCurrent(q[0]);
   }, [words]);
 
   useEffect(() => {
     if (!current) return;
-    prepareWord(current);
-  }, [current]);
 
-  function prepareWord(word) {
-    const pos = Math.floor(Math.random() * word.da.length);
-    const correct = word.da[pos];
-
+    const pos = Math.floor(Math.random() * current.da.length);
     setMissingPos(pos);
 
-    const maskedWord =
-      word.da.slice(0, pos) + "_" + word.da.slice(pos + 1);
+    const correct = current.da[pos];
+    const maskedWord = current.da.slice(0, pos) + "_" + current.da.slice(pos + 1);
     setMasked(maskedWord);
 
-    const alphabet = "abcdefghijklmnopqrstuvwxyzæøå".split("");
-    const wrong = alphabet
-      .filter((l) => l !== correct)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2);
-
-    setOptions([correct, ...wrong].sort(() => Math.random() - 0.5));
-  }
+    const wrong = shuffle(alphabet.filter((l) => l !== correct)).slice(0, 2);
+    setOptions(shuffle([correct, ...wrong]));
+  }, [current]);
 
   function pick(letter) {
     const correct = current.da[missingPos];
@@ -53,15 +46,14 @@ export default function MissingLetterGame({ words, onComplete }) {
     setTimeout(() => {
       setFeedback("");
       nextWord();
-    }, 400);
+    }, 300);
   }
 
   function nextWord() {
-    const newQ = queue.slice(1);
-    if (newQ.length === 0) return onComplete();
-
-    setQueue(newQ);
-    setCurrent(newQ[0]);
+    const rest = queue.slice(1);
+    if (rest.length === 0) return onComplete();
+    setQueue(rest);
+    setCurrent(rest[0]);
   }
 
   if (!current) return null;
@@ -76,11 +68,7 @@ export default function MissingLetterGame({ words, onComplete }) {
 
       <div className="btn-group">
         {options.map((o, i) => (
-          <button
-            key={i}
-            className="btn btn-outline"
-            onClick={() => pick(o)}
-          >
+          <button key={i} className="btn btn-outline" onClick={() => pick(o)}>
             {o}
           </button>
         ))}

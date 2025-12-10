@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
-import { useNavigate } from "react-router-dom";
-
 import MultipleChoiceGame from "../components/MultipleChoiceGame";
 import WordBuilder from "../components/WordBuilder";
 import MissingLetterGame from "../components/MissingLetterGame";
+import { useNavigate } from "react-router-dom";
 
 export default function GameFlow() {
   const [words, setWords] = useState(null);
@@ -18,19 +17,15 @@ export default function GameFlow() {
   async function loadWords() {
     const userId = localStorage.getItem("user_id");
 
-    // pobieramy dokładnie TE 10 słów wybranych w SwipeDaily
     const { data, error } = await supabase
       .from("user_to_verify")
       .select("word_id, words(*)")
       .eq("user_id", userId);
 
-    if (error) {
-      console.error("Error loading verify words:", error);
-      return;
-    }
+    if (error) return console.error(error);
 
-    const selectedWords = data.map((r) => r.words);
-    setWords(selectedWords);
+    const selected = data.map((r) => r.words);
+    setWords(selected);
   }
 
   async function finishAll() {

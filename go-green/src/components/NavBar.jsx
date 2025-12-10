@@ -11,7 +11,7 @@ export default function NavBar() {
   }
 
   return (
-    <nav style={{ padding: 12, borderBottom: "1px solid #ddd" }}>
+    <nav>
       <Link to="/">Home</Link> |
       {userId && (
         <>

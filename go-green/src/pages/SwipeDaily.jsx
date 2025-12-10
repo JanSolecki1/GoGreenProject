@@ -9,29 +9,33 @@ export default function SwipeDaily() {
   const nav = useNavigate();
 
   useEffect(() => {
+    resetVerify();
     loadWords();
   }, []);
+
+  async function resetVerify() {
+    const userId = localStorage.getItem("user_id");
+    await supabase.from("user_to_verify").delete().eq("user_id", userId);
+  }
 
   async function loadWords() {
     setLoading(true);
 
     const userId = localStorage.getItem("user_id");
 
-    // 1) Load known words
+    // known
     const { data: known } = await supabase
       .from("user_known_words")
       .select("word_id")
       .eq("user_id", userId);
 
-    const knownIds = known?.map(k => k.word_id) || [];
+    const knownIds = known?.map(w => w.word_id) || [];
 
-    // 2) Load all words
+    // all words
     const { data: all } = await supabase.from("words").select("*");
 
-    // 3) Filter unknown
     const unknown = all.filter(w => !knownIds.includes(w.id));
 
-    // 4) Random 10
     const random10 = unknown.sort(() => Math.random() - 0.5).slice(0, 10);
 
     setWords(random10);
@@ -39,54 +43,37 @@ export default function SwipeDaily() {
     setLoading(false);
   }
 
-  // 🔥 Add ONLY when user clicks I KNOW
   async function handleKnow() {
     const userId = localStorage.getItem("user_id");
     const w = words[index];
 
-    await supabase.from("user_to_verify").insert([{ user_id: userId, word_id: w.id }]);
-
-    // After inserting, check count
-    const { data: verifyList } = await supabase
+    await supabase
       .from("user_to_verify")
-      .select("id")
+      .insert([{ user_id: userId, word_id: w.id }]);
+
+    const { data: verify } = await supabase
+      .from("user_to_verify")
+      .select("*")
       .eq("user_id", userId);
 
-    if (verifyList.length >= 10) {
-      return nav("/game");
-    }
+    if (verify.length >= 10) return nav("/game");
 
     goNext();
   }
 
-  // 🔥 Left swipe does NOT add the word
   function handleNotYet() {
     goNext();
   }
 
-  async function goNext() {
-    const userId = localStorage.getItem("user_id");
-
+  function goNext() {
     if (index + 1 < words.length) {
       setIndex(i => i + 1);
-      return;
+    } else {
+      loadWords(); // reload unknown if user didn't choose 10 yet
     }
-
-    // If we are out of words but user still < 10 selected, fetch more
-    const { data: verifyList } = await supabase
-      .from("user_to_verify")
-      .select("id")
-      .eq("user_id", userId);
-
-    if (verifyList.length >= 10) {
-      return nav("/game");
-    }
-
-    // Load fresh words because user needs more unknown words
-    loadWords();
   }
 
-  if (loading) return <div className="page">Loading...</div>;
+  if (loading) return <div className="page">Loading…</div>;
   if (words.length === 0) return <div className="page">No words available.</div>;
 
   const current = words[index];

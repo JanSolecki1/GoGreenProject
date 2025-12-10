@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "../utils/supabase";
-import { useNavigate } from "react-router-dom";
-
+import { shuffle, splitIntoFragments } from "../utils/gameUtils";
 
 export default function WordBuilder({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
@@ -11,7 +9,7 @@ export default function WordBuilder({ words, onComplete }) {
   const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
-    const q = [...words].sort(() => Math.random() - 0.5);
+    const q = shuffle(words);
     setQueue(q);
     setCurrent(q[0]);
   }, [words]);
@@ -19,8 +17,7 @@ export default function WordBuilder({ words, onComplete }) {
   useEffect(() => {
     if (!current) return;
     const parts = splitIntoFragments(current.da);
-    const pool = shuffle([...parts]);
-    setFragments(pool);
+    setFragments(shuffle(parts));
     setBuilt("");
   }, [current]);
 
@@ -29,8 +26,10 @@ export default function WordBuilder({ words, onComplete }) {
 
     if (!current.da.startsWith(attempt)) {
       setFeedback("Incorrect — next word");
-      setTimeout(() => setFeedback(""), 600);
-      return nextWord();
+      return setTimeout(() => {
+        setFeedback("");
+        nextWord();
+      }, 600);
     }
 
     setBuilt(attempt);
@@ -39,16 +38,16 @@ export default function WordBuilder({ words, onComplete }) {
       setFeedback("Correct!");
       setTimeout(() => {
         setFeedback("");
-        nextWord(true);
+        nextWord();
       }, 300);
     }
   }
 
   function nextWord() {
-    const newQ = queue.slice(1);
-    if (newQ.length === 0) return onComplete();
-    setQueue(newQ);
-    setCurrent(newQ[0]);
+    const rest = queue.slice(1);
+    if (rest.length === 0) return onComplete();
+    setQueue(rest);
+    setCurrent(rest[0]);
   }
 
   if (!current) return null;
@@ -64,7 +63,11 @@ export default function WordBuilder({ words, onComplete }) {
 
       <div className="grid-2">
         {fragments.map((f, i) => (
-          <button key={i} className="btn btn-outline" onClick={() => choose(f)}>
+          <button
+            key={i}
+            className="btn btn-outline"
+            onClick={() => choose(f)}
+          >
             {f}
           </button>
         ))}

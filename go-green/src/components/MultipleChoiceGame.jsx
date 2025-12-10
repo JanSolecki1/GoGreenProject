@@ -14,21 +14,17 @@ export default function MultipleChoiceGame({ words, onComplete }) {
 
   useEffect(() => {
     if (!current) return;
-    prepareOptions(current);
-  }, [current]);
 
-  function prepareOptions(word) {
     const wrong = [...words]
-      .filter((w) => w.id !== word.id)
+      .filter((w) => w.id !== current.id)
       .sort(() => Math.random() - 0.5)
       .slice(0, 2);
 
-    const opts = [word, ...wrong]
-      .map((w) => w.da)
+    const opts = [current.da, ...wrong.map((w) => w.da)]
       .sort(() => Math.random() - 0.5);
 
     setOptions(opts);
-  }
+  }, [current]);
 
   function pick(answer) {
     if (answer !== current.da) {
@@ -40,7 +36,6 @@ export default function MultipleChoiceGame({ words, onComplete }) {
     }
 
     setFeedback("Correct!");
-
     setTimeout(() => {
       setFeedback("");
       nextWord();
@@ -48,12 +43,11 @@ export default function MultipleChoiceGame({ words, onComplete }) {
   }
 
   function nextWord() {
-    const newQ = queue.slice(1);
+    const rest = queue.slice(1);
+    if (rest.length === 0) return onComplete();
 
-    if (newQ.length === 0) return onComplete();
-
-    setQueue(newQ);
-    setCurrent(newQ[0]);
+    setQueue(rest);
+    setCurrent(rest[0]);
   }
 
   if (!current) return null;
