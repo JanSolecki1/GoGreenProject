@@ -6,17 +6,19 @@ import SwipeDaily from "./pages/SwipeDaily";
 import GameFlow from "./pages/GameFlow";
 import Progress from "./pages/Progress";
 import Settings from "./pages/Settings";
-
+import Onboarding from "./pages/Onboarding";
 import NavBar from "./components/NavBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
     <div>
-
       <NavBar />
 
       <Routes>
+        <Route path="/" element={<Onboarding />} />
+        
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/login" element={<Login />} />
 
         <Route path="/words" element={
