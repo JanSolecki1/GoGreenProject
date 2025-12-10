@@ -1,129 +1,141 @@
-/* ============================
-   RESET
-============================ */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* ============================
-   COLOR VARIABLES
-============================ */
-:root {
+:root{
   --bg: #F9FAFB;
   --text: #111827;
   --primary: #2563EB;
   --primary-text: #FFFFFF;
   --success: #10B981;
   --error: #DC2626;
-
-  --card-bg: #FFFFFF;
   --radius: 12px;
+  --gap: 12px;
+  --pad: 16px;
+  --maxw: 640px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --btn-h: 48px;
 }
 
-/* ============================
-   BASE TYPOGRAPHY + LAYOUT
-============================ */
-body {
-  font-family: system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  padding: 16px;
-  max-width: 480px;
-  margin: 0 auto;
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.3;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.page {
-  padding: 8px;
+/* layout center with narrow column for mobile */
+#root{
+  max-width:var(--maxw);
+  margin:0 auto;
+  padding:calc(var(--pad) * 0.5);
 }
 
-/* ============================
-   CARD BLOCK
-============================ */
-.card {
-  background: var(--card-bg);
-  padding: 16px;
-  border-radius: var(--radius);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-  margin-bottom: 16px;
+/* page container */
+.page{
+  padding:var(--pad);
+  display:flex;
+  flex-direction:column;
+  gap:var(--gap);
+  min-height:calc(100vh - 40px);
 }
 
-/* ============================
-   HEADINGS
-============================ */
-h2 {
-  margin-bottom: 12px;
-  font-size: 24px;
+/* card */
+.card{
+  background:#fff;
+  border-radius:12px;
+  box-shadow: 0 6px 20px rgba(17,24,39,0.06);
+  padding:16px;
+  text-align:center;
 }
 
-h3 {
-  margin-bottom: 8px;
-  font-size: 20px;
+/* headings */
+h2{margin:0 0 6px 0;font-size:20px;font-weight:600}
+h3{margin:6px 0;font-size:18px;font-weight:600}
+
+/* text small */
+p{margin:0;color:rgba(17,24,39,0.8);font-size:14px}
+
+/* buttons - primary and outline */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:var(--btn-h);
+  padding:0 14px;
+  border-radius:10px;
+  font-weight:600;
+  font-size:15px;
+  cursor:pointer;
+  border:0;
+  user-select:none;
+  -webkit-user-select:none;
+  transition:transform .12s ease, box-shadow .12s ease, opacity .12s;
+  margin:6px 0;
 }
 
-/* ============================
-   BUTTONS
-============================ */
-.btn {
-  width: 100%;
-  padding: 14px;
-  font-size: 18px;
-  border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-  margin-bottom: 12px;
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+.btn-primary{
+  background:var(--primary);
+  color:var(--primary-text);
+  box-shadow: 0 6px 18px rgba(37,99,235,0.12);
 }
 
-.btn-primary {
-  background: var(--primary);
-  color: var(--primary-text);
+.btn-outline{
+  background:transparent;
+  color:var(--text);
+  border:1px solid rgba(17,24,39,0.06);
+  box-shadow:none;
 }
 
-.btn-outline {
-  border: 2px solid var(--primary);
-  background: transparent;
-  color: var(--primary);
+/* groups and grid */
+.btn-group{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:8px;
 }
 
-.btn-success {
-  background: var(--success);
-  color: var(--primary-text);
+/* progress / small meta */
+.meta{
+  font-size:13px;color:rgba(17,24,39,0.6);
 }
 
-.btn-error {
-  background: var(--error);
-  color: var(--primary-text);
+/* feedback */
+.feedback{
+  margin-top:12px;
+  padding:10px;
+  border-radius:10px;
+  font-weight:600;
+  text-align:center;
+}
+.feedback.success{background:rgba(16,185,129,0.12);color:var(--success)}
+.feedback.error{background:rgba(220,38,38,0.08);color:var(--error)}
+
+/* small helper for masked word */
+.masked{
+  font-family:monospace;
+  letter-spacing:0.06em;
+  font-size:20px;
+  margin-top:6px;
 }
 
-/* ============================
-   FEEDBACK TEXT
-============================ */
-.feedback {
-  text-align: center;
-  font-weight: bold;
-  margin-top: 8px;
+/* responsive tweaks */
+@media(min-width:700px){
+  .page{padding:24px}
+  .card{padding:20px}
+  .btn{height:54px;font-size:16px;border-radius:12px}
+  .grid-2{gap:14px}
 }
 
-.feedback.success {
-  color: var(--success);
-}
+/* accessible focus */
+.btn:focus{outline:3px solid rgba(37,99,235,0.18);outline-offset:2px}
 
-.feedback.error {
-  color: var(--error);
-}
-
-/* ============================
-   GRID HELPERS
-============================ */
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.grid-3 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-}
+/* tiny utilities */
+.center{display:flex;align-items:center;justify-content:center}
+.hidden{display:none}
