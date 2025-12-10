@@ -20,14 +20,15 @@ export default function MultipleChoiceGame({ words, onComplete }) {
       .sort(() => Math.random() - 0.5)
       .slice(0, 2);
 
-    const opts = [current.da, ...wrong.map((w) => w.da)]
-      .sort(() => Math.random() - 0.5);
+    const opts = [current.da, ...wrong.map((w) => w.da)].sort(
+      () => Math.random() - 0.5
+    );
 
     setOptions(opts);
   }, [current]);
 
-  function pick(answer) {
-    if (answer !== current.da) {
+  function pick(o) {
+    if (o !== current.da) {
       setFeedback("Incorrect — next word");
       return setTimeout(() => {
         setFeedback("");
@@ -39,15 +40,15 @@ export default function MultipleChoiceGame({ words, onComplete }) {
     setTimeout(() => {
       setFeedback("");
       nextWord();
-    }, 300);
+    }, 500);
   }
 
   function nextWord() {
-    const rest = queue.slice(1);
-    if (rest.length === 0) return onComplete();
+    const newQ = queue.slice(1);
 
-    setQueue(rest);
-    setCurrent(rest[0]);
+    if (newQ.length === 0) return onComplete();
+    setQueue(newQ);
+    setCurrent(newQ[0]);
   }
 
   if (!current) return null;
@@ -57,23 +58,16 @@ export default function MultipleChoiceGame({ words, onComplete }) {
       <h2>Multiple Choice</h2>
 
       <div className="card">
-        <p>Meaning:</p>
         <h3>{current.en}</h3>
       </div>
 
-      <div className="btn-group">
-        {options.map((o, i) => (
-          <button key={i} className="btn btn-outline" onClick={() => pick(o)}>
-            {o}
-          </button>
-        ))}
-      </div>
+      {options.map((o, i) => (
+        <button key={i} className="btn btn-outline" onClick={() => pick(o)}>
+          {o}
+        </button>
+      ))}
 
-      {feedback && (
-        <div className={`feedback ${feedback.includes("Correct") ? "success" : "error"}`}>
-          {feedback}
-        </div>
-      )}
+      {feedback && <p className="feedback">{feedback}</p>}
     </div>
   );
 }

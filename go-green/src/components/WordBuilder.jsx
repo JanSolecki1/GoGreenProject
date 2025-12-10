@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { shuffle, splitIntoFragments } from "../utils/gameUtils";
+import { splitIntoFragments, shuffle } from "../utils/gameUtils";
 
 export default function WordBuilder({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
@@ -9,15 +9,14 @@ export default function WordBuilder({ words, onComplete }) {
   const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
-    const q = shuffle(words);
+    const q = [...words].sort(() => Math.random() - 0.5);
     setQueue(q);
     setCurrent(q[0]);
   }, [words]);
 
   useEffect(() => {
     if (!current) return;
-    const parts = splitIntoFragments(current.da);
-    setFragments(shuffle(parts));
+    setFragments(shuffle(splitIntoFragments(current.da)));
     setBuilt("");
   }, [current]);
 
@@ -36,48 +35,37 @@ export default function WordBuilder({ words, onComplete }) {
 
     if (attempt === current.da) {
       setFeedback("Correct!");
-      setTimeout(() => {
+      return setTimeout(() => {
         setFeedback("");
         nextWord();
-      }, 300);
+      }, 500);
     }
   }
 
   function nextWord() {
-    const rest = queue.slice(1);
-    if (rest.length === 0) return onComplete();
-    setQueue(rest);
-    setCurrent(rest[0]);
-  }
+    const newQ = queue.slice(1);
+    if (newQ.length === 0) return onComplete();
 
-  if (!current) return null;
+    setQueue(newQ);
+    setCurrent(newQ[0]);
+  }
 
   return (
     <div className="page">
       <h2>Word Builder</h2>
 
       <div className="card">
-        <p>Meaning: {current.en}</p>
         <h3>{built || "—"}</h3>
+        <p>Meaning: {current?.en}</p>
       </div>
 
-      <div className="grid-2">
-        {fragments.map((f, i) => (
-          <button
-            key={i}
-            className="btn btn-outline"
-            onClick={() => choose(f)}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
+      {fragments.map((f, i) => (
+        <button key={i} className="btn btn-outline" onClick={() => choose(f)}>
+          {f}
+        </button>
+      ))}
 
-      {feedback && (
-        <div className={`feedback ${feedback.includes("Correct") ? "success" : "error"}`}>
-          {feedback}
-        </div>
-      )}
+      {feedback && <p className="feedback">{feedback}</p>}
     </div>
   );
 }

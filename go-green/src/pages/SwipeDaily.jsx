@@ -9,33 +9,28 @@ export default function SwipeDaily() {
   const nav = useNavigate();
 
   useEffect(() => {
-    resetVerify();
     loadWords();
   }, []);
 
-  async function resetVerify() {
-    const userId = localStorage.getItem("user_id");
-    await supabase.from("user_to_verify").delete().eq("user_id", userId);
-  }
-
   async function loadWords() {
     setLoading(true);
-
     const userId = localStorage.getItem("user_id");
 
-    // known
+    // LOAD known words
     const { data: known } = await supabase
       .from("user_known_words")
       .select("word_id")
       .eq("user_id", userId);
 
-    const knownIds = known?.map(w => w.word_id) || [];
+    const knownIds = known?.map((k) => k.word_id) || [];
 
-    // all words
+    // LOAD all words
     const { data: all } = await supabase.from("words").select("*");
 
-    const unknown = all.filter(w => !knownIds.includes(w.id));
+    // FILTER unknown only
+    const unknown = all.filter((w) => !knownIds.includes(w.id));
 
+    // PICK 10 random
     const random10 = unknown.sort(() => Math.random() - 0.5).slice(0, 10);
 
     setWords(random10);
@@ -44,16 +39,18 @@ export default function SwipeDaily() {
   }
 
   async function handleKnow() {
-    const userId = localStorage.getItem("user_id");
     const w = words[index];
+    const userId = localStorage.getItem("user_id");
 
-    await supabase
-      .from("user_to_verify")
-      .insert([{ user_id: userId, word_id: w.id }]);
+    // INSERT selected word
+    await supabase.from("user_to_verify").insert([
+      { user_id: userId, word_id: w.id }
+    ]);
 
+    // check count
     const { data: verify } = await supabase
       .from("user_to_verify")
-      .select("*")
+      .select("id")
       .eq("user_id", userId);
 
     if (verify.length >= 10) return nav("/game");
@@ -65,16 +62,31 @@ export default function SwipeDaily() {
     goNext();
   }
 
-  function goNext() {
+  async function goNext() {
+    const userId = localStorage.getItem("user_id");
+
     if (index + 1 < words.length) {
-      setIndex(i => i + 1);
-    } else {
-      loadWords(); // reload unknown if user didn't choose 10 yet
+      setIndex((i) => i + 1);
+      return;
     }
+
+    // end of list — check count
+    const { data: verify } = await supabase
+      .from("user_to_verify")
+      .select("id")
+      .eq("user_id", userId);
+
+    if (verify.length >= 10) {
+      return nav("/game");
+    }
+
+    // need more words
+    loadWords();
   }
 
-  if (loading) return <div className="page">Loading…</div>;
-  if (words.length === 0) return <div className="page">No words available.</div>;
+  if (loading) return <div className="page">Loading...</div>;
+  if (words.length === 0)
+    return <div className="page">No words available.</div>;
 
   const current = words[index];
 
@@ -95,7 +107,9 @@ export default function SwipeDaily() {
         I know
       </button>
 
-      <p>{index + 1} / {words.length}</p>
+      <p>
+        {index + 1} / {words.length}
+      </p>
     </div>
   );
 }
