@@ -7,8 +7,10 @@ import GameFlow from "./pages/GameFlow";
 import Progress from "./pages/Progress";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
+import Practice from "./pages/Practise";
 import NavBar from "./components/NavBar";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 
 export default function App() {
   const location = useLocation();
@@ -63,6 +65,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Settings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/practise"
+          element={
+            <ProtectedRoute>
+              <Practice />
             </ProtectedRoute>
           }
         />

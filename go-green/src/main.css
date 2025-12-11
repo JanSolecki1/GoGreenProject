@@ -244,3 +244,12 @@ p{margin:0;color:rgba(17,24,39,0.8);font-size:14px}
   transform: scale(1);
   opacity: 1;
 }
+
+.logo-btn {
+  background: transparent;
+  border: none;
+  cursor: none;
+  padding: 0;
+  font-family: var(--font);
+  text-align: left;
+}
