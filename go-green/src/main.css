@@ -139,3 +139,34 @@ p{margin:0;color:rgba(17,24,39,0.8);font-size:14px}
 /* tiny utilities */
 .center{display:flex;align-items:center;justify-content:center}
 .hidden{display:none}
+
+/* Swipe Daily */
+.swipe-container {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.swipe-card {
+  padding: 24px;
+  margin: 20px 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.swipe-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.swipe-left:active {
+  transform: translateX(-40px);
+  opacity: 0.6;
+}
+
+.swipe-right:active {
+  transform: translateX(40px);
+  opacity: 0.6;
+}

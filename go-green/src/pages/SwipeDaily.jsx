@@ -6,6 +6,7 @@ export default function SwipeDaily() {
   const [words, setWords] = useState([]);
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [count, setCount] = useState(0); // licznik I KNOW
   const nav = useNavigate();
 
   useEffect(() => {
@@ -16,100 +17,87 @@ export default function SwipeDaily() {
     setLoading(true);
     const userId = localStorage.getItem("user_id");
 
-    // LOAD known words
+    // 1) Pobierz known words
     const { data: known } = await supabase
       .from("user_known_words")
       .select("word_id")
       .eq("user_id", userId);
 
-    const knownIds = known?.map((k) => k.word_id) || [];
+    const knownIds = known?.map(k => k.word_id) || [];
 
-    // LOAD all words
-    const { data: all } = await supabase.from("words").select("*");
+    // 2) Pobierz wszystkie słowa
+    const { data: allWords } = await supabase
+      .from("words")
+      .select("*")
+      .order("id");
 
-    // FILTER unknown only
-    const unknown = all.filter((w) => !knownIds.includes(w.id));
+    // 3) Filtruj UNKNOWN
+    const unknown = allWords.filter(w => !knownIds.includes(w.id));
 
-    // PICK 10 random
-    const random10 = unknown.sort(() => Math.random() - 0.5).slice(0, 10);
-
-    setWords(random10);
+    setWords(unknown);
     setIndex(0);
     setLoading(false);
   }
 
+  // ✔️ user wybrał słowo
   async function handleKnow() {
-    const w = words[index];
     const userId = localStorage.getItem("user_id");
+    const w = words[index];
 
-    // INSERT selected word
     await supabase.from("user_to_verify").insert([
       { user_id: userId, word_id: w.id }
     ]);
 
-    // check count
-    const { data: verify } = await supabase
-      .from("user_to_verify")
-      .select("id")
-      .eq("user_id", userId);
+    const newCount = count + 1;
+    setCount(newCount);
 
-    if (verify.length >= 10) return nav("/game");
-
-    goNext();
-  }
-
-  function handleNotYet() {
-    goNext();
-  }
-
-  async function goNext() {
-    const userId = localStorage.getItem("user_id");
-
-    if (index + 1 < words.length) {
-      setIndex((i) => i + 1);
-      return;
-    }
-
-    // end of list — check count
-    const { data: verify } = await supabase
-      .from("user_to_verify")
-      .select("id")
-      .eq("user_id", userId);
-
-    if (verify.length >= 10) {
+    if (newCount >= 10) {
       return nav("/game");
     }
 
-    // need more words
-    loadWords();
+    nextWord();
   }
 
-  if (loading) return <div className="page">Loading...</div>;
+  // ✔️ user NIE wybrał słowa
+  function handleNotYet() {
+    nextWord();
+  }
+
+  function nextWord() {
+    if (index + 1 < words.length) {
+      setIndex(i => i + 1);
+    } else {
+      alert("You've reached the end — pick 10 words first.");
+    }
+  }
+
+  if (loading) return <div className="page">Loading…</div>;
   if (words.length === 0)
-    return <div className="page">No words available.</div>;
+    return <div className="page">All words learned 🎉</div>;
 
   const current = words[index];
 
   return (
     <div className="page">
-      <h2>Daily Words</h2>
+      <h2>Choose 10 Words</h2>
+      <p>Pick the 10 words you want to practice with in mini-games</p>
 
       <div className="card">
         <h3>{current.da}</h3>
         <p>{current.en}</p>
       </div>
 
-      <button className="btn btn-outline" onClick={handleNotYet}>
-        Not yet
-      </button>
+      <div className="btn-group">
+        <button className="btn btn-outline" onClick={handleNotYet}>
+          Not yet
+        </button>
 
-      <button className="btn btn-primary" onClick={handleKnow}>
-        I know
-      </button>
+        <button className="btn btn-primary" onClick={handleKnow}>
+          I know
+        </button>
+      </div>
 
-      <p>
-        {index + 1} / {words.length}
-      </p>
+      <p className="meta">{count} / 10 selected</p>
     </div>
   );
 }

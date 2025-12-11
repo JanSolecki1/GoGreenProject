@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 const slides = [
   {
     title: "Learn Danish Fast",
-    text: "You’ll learn the 350 most commonly used Danish words — simple and effective."
+    text: "This application will help you learn the most commonly used Danish words."
   },
   {
     title: "Choose Your 10 Words",
-    text: "Every day you pick 10 words you want to focus on. These are used in mini-games."
+    text: "Pick 10 words you want to learn. These are used in mini-games."
   },
   {
     title: "Build Your Streak",
