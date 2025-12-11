@@ -108,7 +108,7 @@ export default function Progress() {
         {/* Practice known words */}
         <button
           className="btn btn-primary"
-          onClick={() => (window.location.href = "/practise")}
+          onClick={() => (window.location.href = "/practice")}
         >
           Practice known words
         </button>

@@ -29,16 +29,25 @@ export default function GameFlow() {
   }
 
   async function finishAll() {
-    const userId = localStorage.getItem("user_id");
+  const userId = localStorage.getItem("user_id");
 
-    await supabase.from("user_known_words").insert(
-      words.map((w) => ({ user_id: userId, word_id: w.id }))
-    );
+  // Save known words
+  await supabase.from("user_known_words").insert(
+    words.map((w) => ({
+      user_id: userId,
+      word_id: w.id,
+    }))
+  );
 
-    await supabase.from("user_to_verify").delete().eq("user_id", userId);
-    localStorage.setItem("last_completion", new Date().toDateString());
-    nav("/progress");
-  }
+  // Clear verification list
+  await supabase.from("user_to_verify").delete().eq("user_id", userId);
+
+  // IMPORTANT — save streak completion timestamp
+  localStorage.setItem("last_completion", new Date().toDateString());
+
+  nav("/progress");
+}
+
 
   if (!words) return <div className="page">Loading…</div>;
 

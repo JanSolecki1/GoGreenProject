@@ -7,7 +7,7 @@ import GameFlow from "./pages/GameFlow";
 import Progress from "./pages/Progress";
 import Settings from "./pages/Settings";
 import Onboarding from "./pages/Onboarding";
-import Practice from "./pages/Practise";
+import Practice from "./pages/Practice";
 import NavBar from "./components/NavBar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -70,7 +70,7 @@ export default function App() {
         />
 
         <Route
-          path="/practise"
+          path="/practice"
           element={
             <ProtectedRoute>
               <Practice />
