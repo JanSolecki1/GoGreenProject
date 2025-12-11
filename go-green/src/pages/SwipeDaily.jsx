@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
+import LogoHeader from "../components/LogoHeader";
 
 export default function SwipeDaily() {
   const [words, setWords] = useState([]);
@@ -78,6 +79,8 @@ export default function SwipeDaily() {
   const current = words[index];
 
   return (
+    <>
+    <LogoHeader />
     <div className="page">
       <h2>Choose the words</h2>
       <p>Choose the 10 Danish words you want to learn and practice in mini-games</p>
@@ -106,5 +109,6 @@ export default function SwipeDaily() {
 
       <p className="meta">{count} / 10 selected</p>
     </div>
+    </>
   );
 }
