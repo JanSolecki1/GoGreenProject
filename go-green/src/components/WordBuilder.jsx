@@ -24,17 +24,17 @@ export default function WordBuilder({ words, onComplete }) {
     const attempt = built + frag;
 
     if (!current.da.startsWith(attempt)) {
-      setFeedback("Incorrect — next word");
+      setFeedback("❌ Incorrect — new word coming");
       return setTimeout(() => {
         setFeedback("");
         nextWord();
-      }, 600);
+      }, 700);
     }
 
     setBuilt(attempt);
 
     if (attempt === current.da) {
-      setFeedback("Correct!");
+      setFeedback("✅ Correct!");
       return setTimeout(() => {
         setFeedback("");
         nextWord();
@@ -53,6 +53,11 @@ export default function WordBuilder({ words, onComplete }) {
   return (
     <div className="page">
       <h2>Word Builder</h2>
+
+      <p className="meta">
+        Tap the pieces in the correct order to build the Danish word.  
+        If you choose the wrong piece, the next word appears.
+      </p>
 
       <div className="card">
         <h3>{built || "—"}</h3>

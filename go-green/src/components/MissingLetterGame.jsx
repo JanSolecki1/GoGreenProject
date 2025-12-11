@@ -26,8 +26,8 @@ export default function MissingLetterGame({ words, onComplete }) {
     setMasked(word.da.slice(0, p) + "_" + word.da.slice(p + 1));
 
     const correct = word.da[p];
-
     const alphabet = "abcdefghijklmnopqrstuvwxyzæøå".split("");
+
     const wrong = alphabet
       .filter((l) => l !== correct)
       .sort(() => Math.random() - 0.5)
@@ -40,14 +40,14 @@ export default function MissingLetterGame({ words, onComplete }) {
     const correct = current.da[pos];
 
     if (l !== correct) {
-      setFeedback("Incorrect — next word");
+      setFeedback("❌ Incorrect — next word coming");
       return setTimeout(() => {
         setFeedback("");
         next();
-      }, 600);
+      }, 700);
     }
 
-    setFeedback("Correct!");
+    setFeedback("✅ Correct!");
     setTimeout(() => {
       setFeedback("");
       next();
@@ -64,6 +64,12 @@ export default function MissingLetterGame({ words, onComplete }) {
   return (
     <div className="page">
       <h2>Missing Letter</h2>
+
+      <p className="meta">
+        One letter is missing from the Danish word.  
+        Pick the correct letter to complete it.  
+        If you're wrong, a new word appears.
+      </p>
 
       <div className="card">
         <h3>{masked}</h3>

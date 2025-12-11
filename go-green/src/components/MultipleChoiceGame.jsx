@@ -29,14 +29,14 @@ export default function MultipleChoiceGame({ words, onComplete }) {
 
   function pick(o) {
     if (o !== current.da) {
-      setFeedback("Incorrect — next word");
+      setFeedback("❌ Incorrect — next word coming");
       return setTimeout(() => {
         setFeedback("");
         nextWord();
-      }, 600);
+      }, 700);
     }
 
-    setFeedback("Correct!");
+    setFeedback("✅ Correct!");
     setTimeout(() => {
       setFeedback("");
       nextWord();
@@ -56,6 +56,11 @@ export default function MultipleChoiceGame({ words, onComplete }) {
   return (
     <div className="page">
       <h2>Multiple Choice</h2>
+
+      <p className="meta">
+        Choose the correct Danish word for the English meaning.  
+        If you're wrong, a new word appears — try again!
+      </p>
 
       <div className="card">
         <h3>{current.en}</h3>
