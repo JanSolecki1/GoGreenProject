@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { splitIntoFragments, shuffle } from "../utils/gameUtils";
-
+import LogoHeader from "./LogoHeader";
 export default function WordBuilder({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
   const [current, setCurrent] = useState(null);
@@ -24,11 +24,11 @@ export default function WordBuilder({ words, onComplete }) {
     const attempt = built + frag;
 
     if (!current.da.startsWith(attempt)) {
-      setFeedback("❌ Incorrect — new word coming");
+      setFeedback("❌ Incorrect - new word coming");
       return setTimeout(() => {
         setFeedback("");
         nextWord();
-      }, 700);
+      }, 1000);
     }
 
     setBuilt(attempt);
@@ -38,7 +38,7 @@ export default function WordBuilder({ words, onComplete }) {
       return setTimeout(() => {
         setFeedback("");
         nextWord();
-      }, 500);
+      }, 700);
     }
   }
 
@@ -51,12 +51,15 @@ export default function WordBuilder({ words, onComplete }) {
   }
 
   return (
+
+            <>
+          <LogoHeader />
+
     <div className="page">
       <h2>Word Builder</h2>
 
       <p className="meta">
-        Tap the pieces in the correct order to build the Danish word.  
-        If you choose the wrong piece, the next word appears.
+       Tap the pieces in the correct order to form the Danish word.
       </p>
 
       <div className="card">
@@ -72,5 +75,6 @@ export default function WordBuilder({ words, onComplete }) {
 
       {feedback && <p className="feedback">{feedback}</p>}
     </div>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
+import LogoHeader from "../components/LogoHeader";
 
 export default function Progress() {
   const [recentWords, setRecentWords] = useState([]);
@@ -44,11 +45,17 @@ export default function Progress() {
   }
 
   function animateCongrats() {
-    setTimeout(() => setAnim(true), 100); // play animation after mount
+    setTimeout(() => setAnim(true), 200); // play animation after mount
   }
 
   return (
+
+<> 
+ <LogoHeader />
+
     <div className="page">
+
+          
 
       {/* --- Congrats Animation --- */}
       <div
@@ -60,7 +67,7 @@ export default function Progress() {
         }}
       >
         <h2>🎉 Great job!</h2>
-        <p>You learned 10 new words today.</p>
+        <p>You learned 10 new words today!</p>
       </div>
 
       {/* --- Recent 10 words --- */}
@@ -93,5 +100,6 @@ export default function Progress() {
       </button>
 
     </div>
+  </>
   );
 }

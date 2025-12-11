@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from "../utils/supabase";
+import LogoHeader from "./LogoHeader";
 
 export default function MissingLetterGame({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
@@ -40,18 +42,18 @@ export default function MissingLetterGame({ words, onComplete }) {
     const correct = current.da[pos];
 
     if (l !== correct) {
-      setFeedback("❌ Incorrect — next word coming");
+      setFeedback("❌ Incorrect - next word coming");
       return setTimeout(() => {
         setFeedback("");
         next();
-      }, 700);
+      }, 1000);
     }
 
     setFeedback("✅ Correct!");
     setTimeout(() => {
       setFeedback("");
       next();
-    }, 500);
+    }, 700);
   }
 
   function next() {
@@ -62,13 +64,14 @@ export default function MissingLetterGame({ words, onComplete }) {
   }
 
   return (
+        <>
+      <LogoHeader />
     <div className="page">
       <h2>Missing Letter</h2>
 
       <p className="meta">
         One letter is missing from the Danish word.  
-        Pick the correct letter to complete it.  
-        If you're wrong, a new word appears.
+        Choose the correct letter to complete it.  
       </p>
 
       <div className="card">
@@ -83,5 +86,6 @@ export default function MissingLetterGame({ words, onComplete }) {
 
       {feedback && <p className="feedback">{feedback}</p>}
     </div>
+    </>
   );
 }

@@ -4,17 +4,17 @@ import LogoHeader from "../components/LogoHeader";
 
 const slides = [
   {
-    title: "Learn Danish Fast",
-    text: "This application will help you learn the most commonly used Danish words."
+    title: "Learn Danish the Smart Way",
+    text: "Master the most useful Danish words through short, simple and effective learning sessions"
   },
   {
-    title: "Choose Your 10 Words",
-    text: "Pick 10 words you want to learn. These are used in mini-games."
+    title: "Pick your Learning Words",
+    text: "You can select 10 words you want to learn today. These are used in mini-games"
   },
   {
-    title: "Build Your Streak",
-    text: "Finish the games, add words to your Known List, and grow your daily learning streak."
-  }
+    title: "Grow Your Daily Streak",
+    text: "Complete a session each day to build momentum, stay consistent, and expand your vocabulary effortlessly"
+  }  
 ];
 
 export default function Onboarding() {

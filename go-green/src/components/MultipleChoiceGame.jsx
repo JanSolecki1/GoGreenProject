@@ -33,18 +33,18 @@ export default function MultipleChoiceGame({ words, onComplete }) {
 
   function pick(o) {
     if (o !== current.da) {
-      setFeedback("❌ Incorrect — next word coming");
+      setFeedback("❌ Incorrect - next word coming");
       return setTimeout(() => {
         setFeedback("");
         nextWord();
-      }, 700);
+      }, 1000);
     }
 
     setFeedback("✅ Correct!");
     setTimeout(() => {
       setFeedback("");
       nextWord();
-    }, 500);
+    }, 700);
   }
 
   function nextWord() {
@@ -58,13 +58,13 @@ export default function MultipleChoiceGame({ words, onComplete }) {
   if (!current) return null;
 
   return (
-
+       <>      
+   <LogoHeader />
     <div className="page">
       <h2>Multiple Choice</h2>
 
       <p className="meta">
-        Choose the correct Danish word for the English meaning.  
-        If you're wrong, a new word appears — try again!
+         Choose the Danish word that matches the English meaning shown.
       </p>
 
       <div className="card">
@@ -79,5 +79,6 @@ export default function MultipleChoiceGame({ words, onComplete }) {
 
       {feedback && <p className="feedback">{feedback}</p>}
     </div>
+    </>      
   );
 }

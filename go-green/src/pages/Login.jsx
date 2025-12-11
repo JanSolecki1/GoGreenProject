@@ -41,9 +41,9 @@ export default function Login() {
 
   <div className="page center" style={{ paddingTop: 90 }}>
     <div className="card" style={{ width: "100%", maxWidth: 360 }}>
-      <h2 style={{ marginBottom: 12 }}>Welcome</h2>
+      <h2 style={{ marginBottom: 12 }}>Create your username</h2>
       <p style={{ textAlign: "center", marginBottom: 16 }}>
-        Enter your name to start learning Danish vocabulary.
+        This name will be used to log you into the app.
       </p>
 
       <form 
@@ -56,6 +56,7 @@ export default function Login() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          maxLength={21}
         />
 
         <button className="btn btn-primary" type="submit">

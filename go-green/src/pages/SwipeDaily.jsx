@@ -79,21 +79,28 @@ export default function SwipeDaily() {
 
   return (
     <div className="page">
-      <h2>Choose 10 Words</h2>
-      <p>Pick the 10 words you want to practice with in mini-games</p>
+      <h2>Choose the words</h2>
+      <p>Choose the 10 Danish words you want to learn and practice in mini-games</p>
 
       <div className="card">
-        <h3>{current.da}</h3>
-        <p>{current.en}</p>
-      </div>
+  <div style={{ marginBottom: 8 }}>
+    <small style={{ fontSize: 12, opacity: 0.7 }}>Danish word</small>
+    <h3 style={{ margin: 0 }}>{current.da}</h3>
+  </div>
+
+  <div>
+    <small style={{ fontSize: 12, opacity: 0.7 }}>Translation</small>
+    <p style={{ margin: 0 }}>{current.en}</p>
+  </div>
+</div>
 
       <div className="btn-group">
         <button className="btn btn-outline" onClick={handleNotYet}>
-          Not yet
+          Skip
         </button>
 
         <button className="btn btn-primary" onClick={handleKnow}>
-          I know
+          Add word
         </button>
       </div>
 
