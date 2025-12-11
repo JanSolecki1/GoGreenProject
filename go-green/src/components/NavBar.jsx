@@ -9,7 +9,6 @@ export default function NavBar() {
 
   return (
     <nav className="navbar">
-      <h1 className="logo-btn">LUNO</h1>
       <button className="logout-btn" onClick={logout}>Logout</button>      
     </nav>
   );

@@ -245,11 +245,20 @@ p{margin:0;color:rgba(17,24,39,0.8);font-size:14px}
   opacity: 1;
 }
 
+
+
+
+.logo-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 12px 16px;
+  z-index: 9999;
+}
+
 .logo-btn {
-  background: transparent;
-  border: none;
-  cursor: none;
-  padding: 0;
-  font-family: var(--font);
-  text-align: left;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
 }

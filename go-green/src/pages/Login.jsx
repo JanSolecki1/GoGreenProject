@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { supabase } from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
+import LogoHeader from "../components/LogoHeader";
+
 
 export default function Login() {
   const [name, setName] = useState("");
@@ -34,30 +36,35 @@ export default function Login() {
   }
 
   return (
-    <div className="page center">
-      <div className="card" style={{ width: "100%", maxWidth: 360 }}>
-        
-        <h2 style={{ marginBottom: 12 }}>Welcome</h2>
-        <p style={{ textAlign: "center", marginBottom: 16 }}>
-          Enter your name to start learning Danish vocabulary.
-        </p>
+    <>
+  <LogoHeader />
 
-        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          
-          <input
-            className="input"
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+  <div className="page center" style={{ paddingTop: 90 }}>
+    <div className="card" style={{ width: "100%", maxWidth: 360 }}>
+      <h2 style={{ marginBottom: 12 }}>Welcome</h2>
+      <p style={{ textAlign: "center", marginBottom: 16 }}>
+        Enter your name to start learning Danish vocabulary.
+      </p>
 
-          <button className="btn btn-primary" type="submit">
-            Continue
-          </button>
+      <form 
+        onSubmit={handleLogin} 
+        style={{ display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <input
+          className="input"
+          placeholder="Your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
 
-        </form>
-      </div>
+        <button className="btn btn-primary" type="submit">
+          Continue
+        </button>
+      </form>
     </div>
+  </div>
+</>
+
   );
 }

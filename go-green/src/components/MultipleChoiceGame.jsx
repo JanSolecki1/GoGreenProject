@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { supabase } from "../utils/supabase";
+import NavBar from "./NavBar";
+
+
 
 export default function MultipleChoiceGame({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
@@ -54,6 +58,7 @@ export default function MultipleChoiceGame({ words, onComplete }) {
   if (!current) return null;
 
   return (
+
     <div className="page">
       <h2>Multiple Choice</h2>
 

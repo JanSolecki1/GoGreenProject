@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LogoHeader from "../components/LogoHeader";
 
 const slides = [
   {
@@ -29,20 +30,24 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="page" style={{ textAlign: "center" }}>
-      <h2>{slides[step].title}</h2>
+    <>
+      <LogoHeader />
 
-      <div className="card" style={{ marginTop: 20 }}>
-        <p style={{ fontSize: 16 }}>{slides[step].text}</p>
+      <div className="page" style={{ textAlign: "center", paddingTop: 90 }}>
+        <h2>{slides[step].title}</h2>
+
+        <div className="card" style={{ marginTop: 20 }}>
+          <p style={{ fontSize: 16 }}>{slides[step].text}</p>
+        </div>
+
+        <button className="btn btn-primary" onClick={next} style={{ marginTop: 30 }}>
+          {step === slides.length - 1 ? "Start" : "Next"}
+        </button>
+
+        <p className="meta" style={{ marginTop: 10 }}>
+          {step + 1} / {slides.length}
+        </p>
       </div>
-
-      <button className="btn btn-primary" onClick={next} style={{ marginTop: 30 }}>
-        {step === slides.length - 1 ? "Start" : "Next"}
-      </button>
-
-      <p className="meta" style={{ marginTop: 10 }}>
-        {step + 1} / {slides.length}
-      </p>
-    </div>
+    </>
   );
 }
