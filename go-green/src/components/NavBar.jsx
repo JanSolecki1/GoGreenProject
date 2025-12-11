@@ -1,27 +1,16 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function NavBar() {
-  const nav = useNavigate();
-  const userId = localStorage.getItem("user_id");
-
-  function logout() {
+  const logout = () => {
     localStorage.removeItem("user_id");
-    nav("/login");
-  }
+    window.location.href = "/login";
+  };
 
   return (
-    <nav>
-      <Link to="/">Home</Link> |
-      {userId && (
-        <>
-          <Link to="/words"> Daily Words</Link> |
-          <Link to="/game"> Games</Link> |
-          <Link to="/progress"> Progress</Link> |
-          <Link to="/settings"> Settings</Link> |
-          <button onClick={logout}>Logout</button>
-        </>
-      )}
+    <nav className="navbar">
+      <button className="logout-btn" onClick={logout}>Logout</button>
     </nav>
   );
 }
+

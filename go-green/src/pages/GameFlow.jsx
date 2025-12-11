@@ -46,20 +46,17 @@ export default function GameFlow() {
     <div className="page">
       <h2>Mini-games</h2>
 
-      {stage === 1 && (
-        <MultipleChoiceGame
-          words={words}
-          onComplete={() => setStage(2)}
-        />
-      )}
+{stage === 1 && (
+  <MultipleChoiceGame words={words} onComplete={() => setStage(2)} />
+)}
 
-      {stage === 2 && (
-        <WordBuilder words={words} onComplete={() => setStage(3)} />
-      )}
+{stage === 2 && (
+  <MissingLetterGame words={words} onComplete={() => setStage(3)} />
+)}
 
-      {stage === 3 && (
-        <MissingLetterGame words={words} onComplete={finishAll} />
-      )}
+{stage === 3 && (
+  <WordBuilder words={words} onComplete={finishAll} />
+)}
     </div>
   );
 }

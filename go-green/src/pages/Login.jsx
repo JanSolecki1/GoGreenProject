@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { supabase } from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
 
+
 export default function Login() {
   const [name, setName] = useState("");
   const nav = useNavigate();
