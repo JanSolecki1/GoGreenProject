@@ -36,7 +36,7 @@ export default function GameFlow() {
     );
 
     await supabase.from("user_to_verify").delete().eq("user_id", userId);
-
+    localStorage.setItem("last_completion", new Date().toDateString());
     nav("/progress");
   }
 

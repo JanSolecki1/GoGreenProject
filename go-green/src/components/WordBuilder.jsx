@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { splitIntoFragments, shuffle } from "../utils/gameUtils";
+import { supabase } from "../utils/supabase";
 import LogoHeader from "./LogoHeader";
+
 export default function WordBuilder({ words, onComplete }) {
   const [queue, setQueue] = useState([]);
   const [current, setCurrent] = useState(null);

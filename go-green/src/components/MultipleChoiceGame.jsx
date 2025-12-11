@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../utils/supabase";
-import NavBar from "./NavBar";
-
+import LogoHeader from "./LogoHeader";
 
 
 export default function MultipleChoiceGame({ words, onComplete }) {
