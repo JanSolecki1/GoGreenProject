@@ -44,7 +44,6 @@ export default function GameFlow() {
 
   return (
     <div className="page">
-      <h2>Mini-games</h2>
 
 {stage === 1 && (
   <MultipleChoiceGame words={words} onComplete={() => setStage(2)} />
