@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { supabase } from "../utils/supabase";
 import { useNavigate } from "react-router-dom";
 
-
 export default function Login() {
   const [name, setName] = useState("");
   const nav = useNavigate();
@@ -10,7 +9,6 @@ export default function Login() {
   async function handleLogin(e) {
     e.preventDefault();
 
-    // find or create user
     const { data: existing } = await supabase
       .from("users")
       .select("*")
@@ -32,22 +30,34 @@ export default function Login() {
     }
 
     localStorage.setItem("user_id", userId);
-
     nav("/words");
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Enter username</h2>
+    <div className="page center">
+      <div className="card" style={{ width: "100%", maxWidth: 360 }}>
+        
+        <h2 style={{ marginBottom: 12 }}>Welcome</h2>
+        <p style={{ textAlign: "center", marginBottom: 16 }}>
+          Enter your name to start learning Danish vocabulary.
+        </p>
 
-      <form onSubmit={handleLogin}>
-        <input 
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <button>Continue</button>
-      </form>
+        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          
+          <input
+            className="input"
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+
+          <button className="btn btn-primary" type="submit">
+            Continue
+          </button>
+
+        </form>
+      </div>
     </div>
   );
 }
