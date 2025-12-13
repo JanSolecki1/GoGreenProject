@@ -88,7 +88,7 @@ export default function Progress() {
 
         {/* Today's Words */}
         <div className="card">
-          <h3>Today's words</h3>
+          <h3>Words you know</h3>
 
           {recentWords.length === 0 && <p>No completed words yet.</p>}
 
@@ -102,13 +102,13 @@ export default function Progress() {
         {/* Streak */}
         <div className="card">
           <h3>🔥 Daily streak</h3>
-          <p>{streak} day{streak === 1 ? "" : "s"} in a row</p>
+          <p>{streak} day{streak === 2 ? "" : "s"} in a row</p>
         </div>
 
         {/* Practice known words */}
         <button
           className="btn btn-primary"
-          onClick={() => (window.location.href = "/practice")}
+          onClick={() => (window.location.href = "/game")}
         >
           Practice known words
         </button>
